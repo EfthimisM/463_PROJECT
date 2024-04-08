@@ -15,6 +15,7 @@ public class Analysis {
             } else {
                 System.out.println(fileEntry.getAbsolutePath());
                 File file = new File(fileEntry.getAbsolutePath());
+                // Process the file
 
             }
         }
