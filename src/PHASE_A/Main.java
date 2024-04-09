@@ -8,8 +8,4 @@ public class Main {
         File folder = new File(path);
         Analysis A = new Analysis(folder);
     }
-
-    public static void Skata(){
-        System.out.println("SKATA");
-    }
 }
