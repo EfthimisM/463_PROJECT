@@ -13,8 +13,6 @@ import static kotlin.test.AssertionsKt.assertEquals;
 
 public class Analysis {
 
-    private static String Name = "publisher-name";
-    private static String Title = "journal-title";
     public Analysis(File folder){
         listFilesForFolder(folder);
     }
@@ -45,13 +43,22 @@ public class Analysis {
                             Element subjGroupElement = (Element) subjGroupNode;
 
                             // Retrieve subject elements under each article
-                            NodeList NamesList = subjGroupElement.getElementsByTagName(Name);
+                            NodeList Titles = subjGroupElement.getElementsByTagName("title-group");
+
+                            // Print information about each article
+                            for (int j = 0; j < Titles.getLength(); j++) {
+                                Node subjectNode = Titles.item(j);
+                                Element sub = (Element) subjectNode;
+                                System.out.println("\tTitle: " + subjectNode.getTextContent());
+                            }
+
+                            // Retrieve subject elements under each article
+                            NodeList NamesList = subjGroupElement.getElementsByTagName("publisher-name");
 
                             // Print information about each article
                             for (int j = 0; j < NamesList.getLength(); j++) {
                                 Node subjectNode = NamesList.item(j);
-                                Element sub = (Element) subjectNode;
-                                System.out.println("Publisher Name: " + subjectNode.getTextContent());
+                                System.out.println("\tPublisher Name: " + subjectNode.getTextContent());
                             }
 
                             NodeList PubList = subjGroupElement.getElementsByTagName("article-id");
@@ -59,19 +66,41 @@ public class Analysis {
                                 Node subjectNode = PubList.item(j);
                                 Element sub = (Element) subjectNode;
                                 if(sub.getAttribute("pub-id-type").equals("pmc")) {
-                                    System.out.println("PUB Name: " + subjectNode.getTextContent());
+                                    System.out.println("\tPUB Name: " + subjectNode.getTextContent());
                                 }
                             }
 
-                            // Retrieve subject elements under each article
-                            NodeList TitleList = subjGroupElement.getElementsByTagName(Title);
+                            // Retrieve Authors
+                            NodeList contribList = subjGroupElement.getElementsByTagName("contrib");
+                            for (int j = 0; j < contribList.getLength(); j++) {
+                                Element contribElement = (Element) contribList.item(j);
+                                String contribType = contribElement.getAttribute("contrib-type");
 
-                            // Print information about each article
-//                            for (int j = 0; j < TitleList.getLength(); j++) {
-//                                Node subjectNode = TitleList.item(j);
-//                                System.out.println("Title: " + subjectNode.getTextContent());
-//                            }
+                                if (contribType.equals("author")) {
+                                    Element nameElement = (Element) contribElement.getElementsByTagName("name").item(0);
+                                    String surname = nameElement.getElementsByTagName("surname").item(0).getTextContent();
+                                    String givenNames = nameElement.getElementsByTagName("given-names").item(0).getTextContent();
+
+                                    System.out.println("\tAuthor: " + surname + " " + givenNames);
+                                }
+                            }
+
+                            NodeList Categories = subjGroupElement.getElementsByTagName("article-categories");
+                            for (int j = 0; j < Categories.getLength(); j++) {
+                                Node subjectNode = Categories.item(j);
+                                System.out.println("\tCategory: " + subjectNode.getTextContent());
+                            }
+
+                            NodeList Journal = subjGroupElement.getElementsByTagName("journal-title");
+                            for (int j = 0; j < Journal.getLength(); j++) {
+                                Node subjectNode = Journal.item(j);
+                                System.out.println("\tJournal: " + subjectNode.getTextContent());
+                            }
+
+                            // Missing: περιληψη και κυριος περιεγχομενο
+
                         }
+
                     }
                 } catch (Exception e){
                     e.printStackTrace();
