@@ -8,8 +8,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
-
-import static kotlin.test.AssertionsKt.assertEquals;
+import java.util.ArrayList;
+import java.util.HashSet;
+import gr.uoc.csd.hy463.NXMLFileReader;
 
 public class Analysis {
 
@@ -31,7 +32,25 @@ public class Analysis {
                 try {
                     File file = new File(fileEntry.getAbsolutePath());
                     System.out.println(file);
-                    DocumentBuilder db = dbf.newDocumentBuilder();
+                    NXMLFileReader xmlFile = new NXMLFileReader(file);
+                    String pmcid = xmlFile.getPMCID();
+                    String title = xmlFile.getTitle();
+                    String abstr = xmlFile.getAbstr();
+                    String body = xmlFile.getBody();
+                    String journal = xmlFile.getJournal();
+                    String publisher = xmlFile.getPublisher();
+                    ArrayList<String> authors = xmlFile.getAuthors();
+                    HashSet<String> categories =xmlFile.getCategories();
+
+                    System.out.println("- PMC ID: " + pmcid);
+                    System.out.println("- Title: " + title);
+                    System.out.println("- Abstract: " + abstr);
+                    System.out.println("- Body: " + body);
+                    System.out.println("- Journal: " + journal);
+                    System.out.println("- Publisher: " + publisher);
+                    System.out.println("- Authors: " + authors);
+                    System.out.println("- Categories: " + categories);
+                    /*DocumentBuilder db = dbf.newDocumentBuilder();
                     Document doc = db.parse(file);
                     doc.getDocumentElement().normalize();
 
@@ -101,7 +120,7 @@ public class Analysis {
 
                         }
 
-                    }
+                    }*/
                 } catch (Exception e){
                     e.printStackTrace();
                 }
