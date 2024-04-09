@@ -50,17 +50,27 @@ public class Analysis {
                             // Print information about each article
                             for (int j = 0; j < NamesList.getLength(); j++) {
                                 Node subjectNode = NamesList.item(j);
+                                Element sub = (Element) subjectNode;
                                 System.out.println("Publisher Name: " + subjectNode.getTextContent());
+                            }
+
+                            NodeList PubList = subjGroupElement.getElementsByTagName("article-id");
+                            for (int j = 0; j < PubList.getLength(); j++) {
+                                Node subjectNode = PubList.item(j);
+                                Element sub = (Element) subjectNode;
+                                if(sub.getAttribute("pub-id-type").equals("pmc")) {
+                                    System.out.println("PUB Name: " + subjectNode.getTextContent());
+                                }
                             }
 
                             // Retrieve subject elements under each article
                             NodeList TitleList = subjGroupElement.getElementsByTagName(Title);
 
                             // Print information about each article
-                            for (int j = 0; j < TitleList.getLength(); j++) {
-                                Node subjectNode = TitleList.item(j);
-                                System.out.println("Title: " + subjectNode.getTextContent());
-                            }
+//                            for (int j = 0; j < TitleList.getLength(); j++) {
+//                                Node subjectNode = TitleList.item(j);
+//                                System.out.println("Title: " + subjectNode.getTextContent());
+//                            }
                         }
                     }
                 } catch (Exception e){
