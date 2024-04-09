@@ -13,6 +13,8 @@ import static kotlin.test.AssertionsKt.assertEquals;
 
 public class Analysis {
 
+    private static String Name = "publisher-name";
+    private static String Title = "journal-title";
     public Analysis(File folder){
         listFilesForFolder(folder);
     }
@@ -35,20 +37,29 @@ public class Analysis {
                     Document doc = db.parse(file);
                     doc.getDocumentElement().normalize();
 
-                    // Retrieve subj-group elements
+                    // Retrieve article elements
                     NodeList subjGroupList = doc.getElementsByTagName("article");
                     for (int i = 0; i < subjGroupList.getLength(); i++) {
                         Node subjGroupNode = subjGroupList.item(i);
                         if (subjGroupNode.getNodeType() == Node.ELEMENT_NODE) {
                             Element subjGroupElement = (Element) subjGroupNode;
 
-                            // Retrieve subject elements under each subj-group
-                            NodeList subjectList = subjGroupElement.getElementsByTagName("subject");
+                            // Retrieve subject elements under each article
+                            NodeList NamesList = subjGroupElement.getElementsByTagName(Name);
 
-                            // Print information about each subject
-                            for (int j = 0; j < subjectList.getLength(); j++) {
-                                Node subjectNode = subjectList.item(j);
-                                System.out.println("Subject: " + subjectNode.getTextContent());
+                            // Print information about each article
+                            for (int j = 0; j < NamesList.getLength(); j++) {
+                                Node subjectNode = NamesList.item(j);
+                                System.out.println("Publisher Name: " + subjectNode.getTextContent());
+                            }
+
+                            // Retrieve subject elements under each article
+                            NodeList TitleList = subjGroupElement.getElementsByTagName(Title);
+
+                            // Print information about each article
+                            for (int j = 0; j < TitleList.getLength(); j++) {
+                                Node subjectNode = TitleList.item(j);
+                                System.out.println("Title: " + subjectNode.getTextContent());
                             }
                         }
                     }
