@@ -1,41 +1,36 @@
 package PHASE_A;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import java.io.BufferedReader;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.io.IOException;
+import java.text.StringCharacterIterator;
+import java.util.*;
+import java.io.FileReader;
+
 import gr.uoc.csd.hy463.NXMLFileReader;
 
 public class Analysis {
 
 
-    private class Article {
-        int pmcId;
-        String title;
-        String abstr;
-        String body;
-        String journal;
-        String publisher;
-        ArrayList<String> authors;
-        HashSet<String> categories;
-
-        public Article(int id, String tt, String ab, String bod, String j, String pub, ArrayList<String> auth, HashSet<String> cat){
-            pmcId = id;
-            title = tt;
-            abstr = ab;
-            body = bod;
-            journal = j;
-            publisher = pub;
-            authors = auth;
-            categories = cat;
-        }
-    }
+    private ArrayList<Article> articles = new ArrayList<>();
+    private List<String> StopWords;
 
     public Analysis(File folder, File stopwords){
         listFilesForFolder(folder);
+        List<String> stp = new ArrayList<>();
 
+        try (BufferedReader br = new BufferedReader(new FileReader(stopwords))){
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] lineWords = line.split("\\s+"); // split line by whitespace
+                for (String word : lineWords) {
+                    stp.add(word);
+                }
+            }
+        }catch(IOException e) {
+            e.printStackTrace();
+        }
+        StopWords = stp;
     }
 
     private  void listFilesForFolder(File folder) {
@@ -67,7 +62,7 @@ public class Analysis {
                     System.out.println("- Categories: " + categories);
 
                     Article article = new Article(Integer.parseInt(pmcid), title, abstr, body, journal, publisher, authors, categories);
-
+                    articles.add(article);
                 } catch (Exception e){
                     e.printStackTrace();
                 }
