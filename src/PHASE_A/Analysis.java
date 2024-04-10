@@ -10,6 +10,7 @@ import gr.uoc.csd.hy463.NXMLFileReader;
 
 public class Analysis {
 
+
     private class Article {
         int pmcId;
         String title;
@@ -32,8 +33,9 @@ public class Analysis {
         }
     }
 
-    public Analysis(File folder){
+    public Analysis(File folder, File stopwords){
         listFilesForFolder(folder);
+
     }
 
     private  void listFilesForFolder(File folder) {
