@@ -16,7 +16,6 @@ public class Analysis {
     private List<String> StopWords;
 
     public Analysis(File folder, File stopwords){
-        listFilesForFolder(folder);
         List<String> stp = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(stopwords))){
@@ -31,6 +30,7 @@ public class Analysis {
             e.printStackTrace();
         }
         StopWords = stp;
+        listFilesForFolder(folder);
     }
 
     private  void listFilesForFolder(File folder) {
