@@ -69,5 +69,16 @@ public class Analysis {
 
             }
         }
+
+        for(Article article: articles){
+            article.tokenize(StopWords);
+        }
+    } // listFilesForFolder
+
+    private Map<String,Integer> createVocabulary(String pmcid, String title, String abstr, String body, String journal, String publisher, ArrayList authors) {
+        Map<String,Integer> vocabulary = new HashMap<String,Integer>();
+
+        return vocabulary;
+
     }
 }
