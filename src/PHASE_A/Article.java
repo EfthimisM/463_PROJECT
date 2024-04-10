@@ -29,10 +29,16 @@ public class Article {
     }
 
     public void tokenize(List<String> stopWords){
+
+        titleTokenized = new ArrayList<>();
+        abstrTokenized = new ArrayList<>();
+        bodyTokenized = new ArrayList<>();
         //title
         String[] words = title.split(" ");
         for(String word: words){
-            
+            if(!stopWords.contains(word)) {
+                titleTokenized.add(word);
+            }
         }
         //abs
         //body
