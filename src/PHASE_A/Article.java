@@ -35,12 +35,54 @@ public class Article {
         bodyTokenized = new ArrayList<>();
         //title
         String[] words = title.split(" ");
+        String[] punctuation = {".", ",", "?", "!", ";", ":", "'", "\"", ")", "]", "}", "(", "[", "{", "<", ">", "/", "\\"};
         for(String word: words){
-            if(!stopWords.contains(word)) {
-                titleTokenized.add(word);
+            // remove punctuation before tokenizing
+            String tmp = word;
+            for(String punc: punctuation){
+                if(word.endsWith(punc)){
+                    tmp = word.substring(0, word.length() -1 );
+                }
+            }
+
+            if(!stopWords.contains(word) && tmp.length() > 1) {
+                titleTokenized.add(tmp);
             }
         }
         //abs
+        words = abstr.split(" ");
+        for(String word: words){
+            // remove punctuation before tokenizing
+            String tmp = word;
+            for(String punc: punctuation){
+                if(word.endsWith(punc)){
+                    tmp = word.substring(0, word.length() -1 );
+                }
+            }
+
+            if(!stopWords.contains(word) && tmp.length() > 1) {
+                abstrTokenized.add(tmp);
+            }
+        }
         //body
+        words = body.split(" ");
+        for(String word: words){
+            // remove punctuation before tokenizing
+            String tmp = word;
+            for(String punc: punctuation){
+                if(word.endsWith(punc)){
+                    tmp = word.substring(0, word.length() -1 );
+                }
+            }
+
+            if(!stopWords.contains(word) && tmp.length() > 1) {
+                bodyTokenized.add(tmp);
+            }
+        }
+
+        for(String w: titleTokenized){
+            System.out.println(w);
+        }
+
     }
 }
