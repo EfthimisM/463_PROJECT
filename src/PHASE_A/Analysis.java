@@ -72,13 +72,59 @@ public class Analysis {
 
         for(Article article: articles){
             article.tokenize(StopWords);
+            Map<String,Integer> test = createVocabulary(article);
         }
     } // listFilesForFolder
 
-    private Map<String,Integer> createVocabulary(String pmcid, String title, String abstr, String body, String journal, String publisher, ArrayList authors) {
+    private Map<String,Integer> createVocabulary(Article a) {
         Map<String,Integer> vocabulary = new HashMap<String,Integer>();
 
-        return vocabulary;
+        for(String w : a.titleTokenized) {
+            if(vocabulary.containsKey(w)) {
+                vocabulary.put(w, vocabulary.get(w)+1);
 
+            } else {
+                vocabulary.put(w,1);
+            }
+        }
+
+        for(String w : a.abstrTokenized) {
+            if(vocabulary.containsKey(w)) {
+                vocabulary.put(w, vocabulary.get(w)+1);
+
+            } else {
+                vocabulary.put(w,1);
+            }
+        }
+
+        for(String w : a.bodyTokenized) {
+            if(vocabulary.containsKey(w)) {
+                vocabulary.put(w, vocabulary.get(w)+1);
+
+            } else {
+                vocabulary.put(w,1);
+            }
+        }
+
+        for(String w : a.journalTokenized) {
+            if(vocabulary.containsKey(w)) {
+                vocabulary.put(w, vocabulary.get(w)+1);
+
+            } else {
+                vocabulary.put(w,1);
+            }
+        }
+
+        for(String w : a.publisherTokenized) {
+            if(vocabulary.containsKey(w)) {
+                vocabulary.put(w, vocabulary.get(w)+1);
+
+            } else {
+                vocabulary.put(w,1);
+            }
+        }
+        System.out.println(vocabulary);
+
+        return vocabulary;
     }
 }
