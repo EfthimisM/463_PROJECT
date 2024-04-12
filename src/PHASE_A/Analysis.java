@@ -72,56 +72,55 @@ public class Analysis {
 
         for(Article article: articles){
             article.tokenize(StopWords);
-            Map<String,Integer> test = createVocabulary(article);
+            Map<String,Map<String,Integer>> test = createVocabulary(article);
+            article.setVocabulary(test);
         }
     } // listFilesForFolder
 
-    private Map<String,Integer> createVocabulary(Article a) {
-        Map<String,Integer> vocabulary = new HashMap<String,Integer>();
-
-        for(String w : a.titleTokenized) {
-            if(vocabulary.containsKey(w)) {
-                vocabulary.put(w, vocabulary.get(w)+1);
-
-            } else {
-                vocabulary.put(w,1);
+    private Map<String,Map<String,Integer>> createVocabulary(Article a) {
+        Map<String,Map<String,Integer>> vocabulary = new TreeMap<>();
+        for (String w : a.titleTokenized) {
+            if (!vocabulary.containsKey(w)) {
+                vocabulary.put(w, new HashMap<>());
             }
+            Map<String, Integer> temp1 = vocabulary.get(w);
+            temp1.put("Title", temp1.getOrDefault("Title", 0) + 1);
+            vocabulary.put(w,temp1);
+        }
+        // MAP : <"Malaria", { {title = 3} , {abstract = 5},
+        for (String w : a.abstrTokenized) {
+            if (!vocabulary.containsKey(w)) {
+                vocabulary.put(w, new HashMap<>());
+            }
+            Map<String, Integer> temp1 = vocabulary.get(w);
+            temp1.put("Abstract", temp1.getOrDefault("Abstract", 0) + 1);
+            vocabulary.put(w,temp1);
         }
 
-        for(String w : a.abstrTokenized) {
-            if(vocabulary.containsKey(w)) {
-                vocabulary.put(w, vocabulary.get(w)+1);
-
-            } else {
-                vocabulary.put(w,1);
+        for (String w : a.bodyTokenized) {
+            if (!vocabulary.containsKey(w)) {
+                vocabulary.put(w, new HashMap<>());
             }
+            Map<String, Integer> temp1 = vocabulary.get(w);
+            temp1.put("Body", temp1.getOrDefault("Body", 0) + 1);
+            vocabulary.put(w,temp1);
         }
 
-        for(String w : a.bodyTokenized) {
-            if(vocabulary.containsKey(w)) {
-                vocabulary.put(w, vocabulary.get(w)+1);
-
-            } else {
-                vocabulary.put(w,1);
+        for (String w : a.journalTokenized) {
+            if (!vocabulary.containsKey(w)) {
+                vocabulary.put(w, new HashMap<>());
             }
+            Map<String, Integer> temp1 = vocabulary.get(w);
+            temp1.put("Journal", temp1.getOrDefault("Journal", 0) + 1);
+            vocabulary.put(w,temp1);
         }
-
-        for(String w : a.journalTokenized) {
-            if(vocabulary.containsKey(w)) {
-                vocabulary.put(w, vocabulary.get(w)+1);
-
-            } else {
-                vocabulary.put(w,1);
+        for (String w : a.publisherTokenized) {
+            if (!vocabulary.containsKey(w)) {
+                vocabulary.put(w, new HashMap<>());
             }
-        }
-
-        for(String w : a.publisherTokenized) {
-            if(vocabulary.containsKey(w)) {
-                vocabulary.put(w, vocabulary.get(w)+1);
-
-            } else {
-                vocabulary.put(w,1);
-            }
+            Map<String, Integer> temp1 = vocabulary.get(w);
+            temp1.put("Publisher", temp1.getOrDefault("Publisher", 0) + 1);
+            vocabulary.put(w,temp1);
         }
         System.out.println(vocabulary);
 

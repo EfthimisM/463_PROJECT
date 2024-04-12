@@ -19,7 +19,7 @@ public class Article {
     ArrayList<String> publisherTokenized;
     ArrayList<String> authors;
     HashSet<String> categories;
-    private Map<String,Integer> vocabulary;
+    private Map<String, Map<String,Integer>> vocabulary;
 
     public Article(int id, String tt, String ab, String bod, String j, String pub, ArrayList<String> auth, HashSet<String> cat){
         pmcId = id;
@@ -117,7 +117,7 @@ public class Article {
         }
 
     }
-    public void setVocabulary(Map<String,Integer> vocabulary) {
+    public void setVocabulary(Map<String, Map<String,Integer>> vocabulary) {
         this.vocabulary = vocabulary;
     }
 }
