@@ -3,7 +3,6 @@ package PHASE_A;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.text.StringCharacterIterator;
 import java.util.*;
 import java.io.FileReader;
 
@@ -13,10 +12,12 @@ public class Analysis {
 
 
     private ArrayList<Article> articles = new ArrayList<>();
+    private Map<String,Word> Words = new HashMap<>();
     private List<String> StopWords;
-
+    Word word;
     public Analysis(File folder, File stopwords){
         List<String> stp = new ArrayList<>();
+
 
         try (BufferedReader br = new BufferedReader(new FileReader(stopwords))){
             String line;
@@ -74,11 +75,35 @@ public class Analysis {
             article.tokenize(StopWords);
             Map<String,Map<String,Integer>> test = createVocabulary(article);
             article.setVocabulary(test);
+            for(String w : test.keySet()) {
+                if(!Words.containsKey(w)) {
+                    Word x = new Word(w);
+                    Map<Integer, Map<String, Integer>> tagFrequency = new HashMap<>();
+                    tagFrequency.put(article.pmcId,test.get(w));
+                    x.setTagFrequency(tagFrequency);
+                    Words.put(w,x);
+                } else {
+                    Map<Integer, Map<String, Integer>> tagFrequency = new HashMap<>();
+                    tagFrequency.put(article.pmcId,test.get(w));
+
+                }
+
+
+            }
+
+
         }
     } // listFilesForFolder
 
+    private ArrayList<Article> getArticles() {
+        return articles;
+    }
+
+
     private Map<String,Map<String,Integer>> createVocabulary(Article a) {
         Map<String,Map<String,Integer>> vocabulary = new TreeMap<>();
+
+        Integer ID = a.pmcId;
         for (String w : a.titleTokenized) {
             if (!vocabulary.containsKey(w)) {
                 vocabulary.put(w, new HashMap<>());
@@ -122,7 +147,7 @@ public class Analysis {
             temp1.put("Publisher", temp1.getOrDefault("Publisher", 0) + 1);
             vocabulary.put(w,temp1);
         }
-        System.out.println(vocabulary);
+        // System.out.println(vocabulary);
 
         return vocabulary;
     }
