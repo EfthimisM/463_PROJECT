@@ -120,4 +120,9 @@ public class Article {
     public void setVocabulary(Map<String, Map<String,Integer>> vocabulary) {
         this.vocabulary = vocabulary;
     }
+
+    public Map<String, Map<String, Integer>> getVocabulary() {
+        return vocabulary;
+    }
+
 }
