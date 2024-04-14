@@ -1,22 +1,18 @@
 package PHASE_A;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
-import java.io.FileReader;
 
 import gr.uoc.csd.hy463.NXMLFileReader;
 public class Analysis {
 
 
     private ArrayList<Article> articles = new ArrayList<>();
-    private Map<String,Word> Words = new HashMap<>();
+    private Map<String,Word> Words = new TreeMap<>();
     private List<String> StopWords;
-    Word word;
+
     public Analysis(File folder, File stopwords){
         List<String> stp = new ArrayList<>();
-
 
         try (BufferedReader br = new BufferedReader(new FileReader(stopwords))){
             String line;
@@ -31,6 +27,24 @@ public class Analysis {
         }
         StopWords = stp;
         listFilesForFolder(folder);
+    }
+
+    private void createCollectionIndex(){
+        File folder = new File("CollectionIndex");
+        folder.mkdir();
+
+        File vocabularyFile = new File(folder, "VocabularyFile.txt");
+        try {
+            FileWriter writer = new FileWriter(vocabularyFile, true);
+            BufferedWriter bw = new BufferedWriter(writer);
+            // Write like this: bw.write("asd");
+            for(Map.Entry<String,Word> entry: Words.entrySet()){
+                bw.write(entry.getKey() + "\t"+ entry.getValue().getdF() + "\n");
+            }
+            bw.close();
+        } catch (IOException e) {
+            System.out.println("An error occurred while creating the file: " + e.getMessage());
+        }
     }
 
     private  void listFilesForFolder(File folder) {
@@ -70,28 +84,35 @@ public class Analysis {
             }
         }
 
+
         for(Article article: articles){
             article.tokenize(StopWords);
             Map<String,Map<String,Integer>> test = createVocabulary(article);
             article.setVocabulary(test);
             for(String w : test.keySet()) {
+                Map<Integer,Map<String, Integer>> TagFrequency = new HashMap<>();
+                Word x;
                 if(!Words.containsKey(w)) {
-                    Word x = new Word(w);
-                    Map<Integer, Map<String, Integer>> tagFrequency = new HashMap<>();
-                    tagFrequency.put(article.pmcId,test.get(w));
-                    x.setTagFrequency(tagFrequency);
+                    x = new Word(w);
                     Words.put(w,x);
-                } else {
-                    Map<Integer, Map<String, Integer>> tagFrequency = new HashMap<>();
-                    tagFrequency.put(article.pmcId,test.get(w));
-
                 }
-
+                Map<String, Integer> freqArticle = test.get(w);
+                x = Words.get(w);
+                TagFrequency.put(article.pmcId,freqArticle);
+                x.setTagFrequency(TagFrequency);
 
             }
 
-
         }
+        for(Map.Entry<String,Word> entry: Words.entrySet()) {
+            System.out.print(entry.getKey()+" ");
+            System.out.print(entry.getValue().getTagFrequency()+"------");
+            System.out.println(entry.getValue().getTagFrequency().size());
+            int dF = entry.getValue().getTagFrequency().size();
+            entry.getValue().setdF(dF);
+        }
+        createCollectionIndex();
+
     } // listFilesForFolder
 
     private ArrayList<Article> getArticles() {

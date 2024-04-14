@@ -17,6 +17,10 @@ public class Word {
      */
     private String value;
     /**
+     * document frequency : Number of documents where the term is encountered
+     */
+    private int dF;
+    /**
      * Integer(first parameter) : document ID.
      * Integer(second parameter) : frequency on this file.
      */
@@ -44,12 +48,20 @@ public class Word {
 
     }
 
+    public void setdF(int dF) {
+        this.dF = dF;
+    }
+
+    public int getdF() {
+        return dF;
+    }
+
     public String getValue() {
         return value;
     }
 
     public void setTagFrequency(Map<Integer, Map<String, Integer>> tagFrequency) {
-        TagFrequency = tagFrequency;
+        TagFrequency.putAll(tagFrequency);
     }
 
     public void setTermFrequecy(Map<Integer, Integer> termFrequecy) {
