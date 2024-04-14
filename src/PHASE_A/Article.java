@@ -32,6 +32,24 @@ public class Article {
         categories = cat;
     }
 
+    // Function that removes punctuation and removes stop words
+    public static String tokenize(String word, List<String> tokens) {
+        char[] punctuation = {'.', ',', '?', '!', ';', ':', '\'', '\"', ')', ']', '}', '(', '[', '{', '<', '>', '/', '\\'};
+        if (tokens.contains(word)) {
+            return "A";
+        }
+        for (char p : punctuation) {
+            if (word.indexOf(p) != -1) {
+                String tmp = word.replace(Character.toString(p), "");
+                word = tokenize(tmp, tokens);
+            }
+        }
+        if(word.isEmpty()){
+            return "A";
+        }
+        return word;
+    }
+
     public void tokenize(List<String> stopWords){
 
         titleTokenized = new ArrayList<>();
@@ -39,79 +57,44 @@ public class Article {
         bodyTokenized = new ArrayList<>();
         journalTokenized = new ArrayList<>();
         publisherTokenized = new ArrayList<>();
+
         //title
         String[] words = title.split(" ");
-        String[] punctuation = {".", ",", "?", "!", ";", ":", "'", "\"", ")", "]", "}", "(", "[", "{", "<", ">", "/", "\\"};
         for(String word: words){
-            // remove punctuation before tokenizing
-            String tmp = word;
-            for(String punc: punctuation){
-                if(word.endsWith(punc)){
-                    tmp = word.substring(0, word.length() -1 );
-                }
-            }
-
-            if(!stopWords.contains(word) && tmp.length() > 1) {
+            String tmp = tokenize(word, stopWords);
+            if(!tmp.endsWith("A")){
                 titleTokenized.add(tmp);
             }
         }
         //abs
         words = abstr.split(" ");
         for(String word: words){
-            // remove punctuation before tokenizing
-            String tmp = word;
-            for(String punc: punctuation){
-                if(word.endsWith(punc)){
-                    tmp = word.substring(0, word.length() -1 );
-                }
-            }
-
-            if(!stopWords.contains(word) && tmp.length() > 1) {
+            String tmp = tokenize(word, stopWords);
+            if(!tmp.endsWith("A")){
                 abstrTokenized.add(tmp);
             }
         }
         //body
         words = body.split(" ");
         for(String word: words){
-            // remove punctuation before tokenizing
-            String tmp = word;
-            for(String punc: punctuation){
-                if(word.endsWith(punc)){
-                    tmp = word.substring(0, word.length() -1 );
-                }
-            }
-
-            if(!stopWords.contains(word) && tmp.length() > 1) {
+            String tmp = tokenize(word, stopWords);
+            if(!tmp.endsWith("A")){
                 bodyTokenized.add(tmp);
             }
         }
 
         words = journal.split(" ");
         for(String word: words){
-            // remove punctuation before tokenizing
-            String tmp = word;
-            for(String punc: punctuation){
-                if(word.endsWith(punc)){
-                    tmp = word.substring(0, word.length() -1 );
-                }
-            }
-
-            if(!stopWords.contains(word) && tmp.length() > 1) {
+            String tmp = tokenize(word, stopWords);
+            if(!tmp.endsWith("A")){
                 journalTokenized.add(tmp);
             }
         }
 
         words = publisher.split(" ");
         for(String word: words){
-            // remove punctuation before tokenizing
-            String tmp = word;
-            for(String punc: punctuation){
-                if(word.endsWith(punc)){
-                    tmp = word.substring(0, word.length() -1 );
-                }
-            }
-
-            if(!stopWords.contains(word) && tmp.length() > 1) {
+            String tmp = tokenize(word, stopWords);
+            if(!tmp.endsWith("A")){
                 publisherTokenized.add(tmp);
             }
         }

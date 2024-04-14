@@ -7,7 +7,6 @@ import java.util.*;
 import java.io.FileReader;
 
 import gr.uoc.csd.hy463.NXMLFileReader;
-
 public class Analysis {
 
 
@@ -147,7 +146,7 @@ public class Analysis {
             temp1.put("Publisher", temp1.getOrDefault("Publisher", 0) + 1);
             vocabulary.put(w,temp1);
         }
-        // System.out.println(vocabulary);
+        System.out.println(vocabulary);
 
         return vocabulary;
     }
