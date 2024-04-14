@@ -21,8 +21,9 @@ public class Article {
     ArrayList<String> authors;
     HashSet<String> categories;
     private Map<String, Map<String,Integer>> vocabulary;
+    String path;
 
-    public Article(int id, String tt, String ab, String bod, String j, String pub, ArrayList<String> auth, HashSet<String> cat){
+    public Article(int id, String tt, String ab, String bod, String j, String pub, ArrayList<String> auth, HashSet<String> cat, String path){
         pmcId = id;
         title = tt;
         abstr = ab;
@@ -31,6 +32,7 @@ public class Article {
         publisher = pub;
         authors = auth;
         categories = cat;
+        this.path = path;
     }
 
     // Function that removes punctuation and removes stop words

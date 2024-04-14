@@ -53,6 +53,21 @@ public class Analysis {
         } catch (IOException e) {
             System.out.println("An error occurred while creating the file: " + e.getMessage());
         }
+
+        File documentFile = new File(folder, "DocumentsFile.txt");
+        clearFile(documentFile);
+
+        try {
+            FileWriter writer = new FileWriter(documentFile, true);
+            BufferedWriter bw = new BufferedWriter(writer);
+            // Write like this: bw.write("asd");
+            for(Article article: articles){
+                bw.write(article.pmcId + "\t"+ article.path+ "\t"+article.getVocabulary().size() +"\n");
+            }
+            bw.close();
+        } catch (IOException e) {
+            System.out.println("An error occurred while creating the file: " + e.getMessage());
+        }
     }
 
     private  void listFilesForFolder(File folder) {
@@ -83,7 +98,7 @@ public class Analysis {
                     System.out.println("- Authors: " + authors);
                     System.out.println("- Categories: " + categories);
 
-                    Article article = new Article(Integer.parseInt(pmcid), title, abstr, body, journal, publisher, authors, categories);
+                    Article article = new Article(Integer.parseInt(pmcid), title, abstr, body, journal, publisher, authors, categories, fileEntry.getAbsolutePath());
                     articles.add(article);
                 } catch (Exception e){
                     e.printStackTrace();

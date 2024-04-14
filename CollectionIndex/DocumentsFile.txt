@@ -1,0 +1,6 @@
+239864	G:\hy463\MedicalCollection\Test\239864.nxml	655
+239865	G:\hy463\MedicalCollection\Test\239865.nxml	610
+239890	G:\hy463\MedicalCollection\Test\239890.nxml	508
+239891	G:\hy463\MedicalCollection\Test\239891.nxml	875
+239893	G:\hy463\MedicalCollection\Test\239893.nxml	487
+239895	G:\hy463\MedicalCollection\Test\239895.nxml	785
