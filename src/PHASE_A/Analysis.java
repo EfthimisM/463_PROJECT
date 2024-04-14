@@ -29,11 +29,19 @@ public class Analysis {
         listFilesForFolder(folder);
     }
 
+    public static void clearFile(File file) {
+        if (file.exists()) {
+            file.delete();
+        }
+    }
+
     private void createCollectionIndex(){
         File folder = new File("CollectionIndex");
         folder.mkdir();
 
         File vocabularyFile = new File(folder, "VocabularyFile.txt");
+        clearFile(vocabularyFile);
+        
         try {
             FileWriter writer = new FileWriter(vocabularyFile, true);
             BufferedWriter bw = new BufferedWriter(writer);
