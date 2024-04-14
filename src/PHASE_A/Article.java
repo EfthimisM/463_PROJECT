@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import mitos.stemmer.Stemmer;
 
 public class Article {
     int pmcId;
@@ -63,7 +64,7 @@ public class Article {
         for(String word: words){
             String tmp = tokenize(word, stopWords);
             if(!tmp.endsWith("A")){
-                titleTokenized.add(tmp);
+                titleTokenized.add(Stemmer.Stem(tmp));
             }
         }
         //abs
@@ -71,7 +72,7 @@ public class Article {
         for(String word: words){
             String tmp = tokenize(word, stopWords);
             if(!tmp.endsWith("A")){
-                abstrTokenized.add(tmp);
+                abstrTokenized.add(Stemmer.Stem(tmp));
             }
         }
         //body
@@ -79,7 +80,7 @@ public class Article {
         for(String word: words){
             String tmp = tokenize(word, stopWords);
             if(!tmp.endsWith("A")){
-                bodyTokenized.add(tmp);
+                bodyTokenized.add(Stemmer.Stem(tmp));
             }
         }
 
@@ -87,7 +88,7 @@ public class Article {
         for(String word: words){
             String tmp = tokenize(word, stopWords);
             if(!tmp.endsWith("A")){
-                journalTokenized.add(tmp);
+                journalTokenized.add(Stemmer.Stem(tmp));
             }
         }
 
@@ -95,7 +96,7 @@ public class Article {
         for(String word: words){
             String tmp = tokenize(word, stopWords);
             if(!tmp.endsWith("A")){
-                publisherTokenized.add(tmp);
+                publisherTokenized.add(Stemmer.Stem(tmp));
             }
         }
 
