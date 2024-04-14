@@ -21,7 +21,6 @@ public class Word {
      * Integer(second parameter) : frequency on this file.
      */
     private Map<Integer, Integer> TermFrequecy = new HashMap<>();
-    // Document Id, Array of ranks [1,4,6,..]
     /**
      * Integer : document ID
      * ArrayList of Integers : position where the term is found in the document

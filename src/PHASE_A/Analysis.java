@@ -146,6 +146,25 @@ public class Analysis {
             temp1.put("Publisher", temp1.getOrDefault("Publisher", 0) + 1);
             vocabulary.put(w,temp1);
         }
+
+        for(String w : a.authors){
+            if (!vocabulary.containsKey(w)) {
+                vocabulary.put(w, new HashMap<>());
+            }
+            Map<String, Integer> temp1 = vocabulary.get(w);
+            temp1.put("Authors", temp1.getOrDefault("Authors", 0) + 1);
+            vocabulary.put(w,temp1);
+        }
+
+        for(String w : a.categories){
+            if (!vocabulary.containsKey(w)) {
+                vocabulary.put(w, new HashMap<>());
+            }
+            Map<String, Integer> temp1 = vocabulary.get(w);
+            temp1.put("Categories", temp1.getOrDefault("Categories", 0) + 1);
+            vocabulary.put(w,temp1);
+        }
+
         System.out.println(vocabulary);
 
         return vocabulary;
