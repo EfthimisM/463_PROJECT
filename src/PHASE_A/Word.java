@@ -3,6 +3,7 @@ package PHASE_A;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class Word {
 
@@ -30,6 +31,11 @@ public class Word {
      * ArrayList of Integers : position where the term is found in the document
      */
     private Map<Integer, ArrayList<Integer>> WordDocumentRank = new HashMap<>();
+    /**
+     * Integer : document Id
+     * Double : Cosine similarity of the term in the given document
+     */
+    private Map<Integer, Double> cosSimilarity = new HashMap<>();
 
     public Word(String word){
         this.value = word;
@@ -65,11 +71,25 @@ public class Word {
     }
 
     public void setTermFrequecy(Map<Integer, Integer> termFrequecy) {
-        TermFrequecy = termFrequecy;
+        TermFrequecy.putAll(termFrequecy);
     }
 
     public void setWordDocumentRank(Map<Integer, ArrayList<Integer>> wordDocumentRank) {
         WordDocumentRank = wordDocumentRank;
+    }
+
+    public Map<Integer, Double> getCosSimilarity() {
+        return cosSimilarity;
+    }
+
+    public void setCosSimilarity(ArrayList<Article> articles){
+        for(Article article : articles){
+            if(TermFrequecy.containsKey(article.pmcId)){
+                double tf = (double) TermFrequecy.get(article.pmcId) / article.getMaxFrequency();
+                double idf = Math.log( articles.size()/ (double) dF) / Math.log(2);
+                cosSimilarity.put(article.pmcId, tf * idf);
+            }
+        }
     }
 
 }

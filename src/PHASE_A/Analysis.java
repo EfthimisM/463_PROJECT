@@ -29,7 +29,7 @@ public class Analysis {
         listFilesForFolder(folder);
     }
 
-    public static void clearFile(File file) {
+    private static void clearFile(File file) {
         if (file.exists()) {
             file.delete();
         }
@@ -62,7 +62,13 @@ public class Analysis {
             BufferedWriter bw = new BufferedWriter(writer);
             // Write like this: bw.write("asd");
             for(Article article: articles){
-                bw.write(article.pmcId + "\t"+ article.path+ "\t"+article.getVocabulary().size() +"\n");
+                bw.write(article.pmcId + "\t"+ article.path+ "\n");
+                for(Map.Entry<String,Word> entry: Words.entrySet()){
+                    if(entry.getValue().getCosSimilarity().containsKey(article.pmcId)){
+                        bw.write(entry.getValue().getValue() +"\t" + entry.getValue().getCosSimilarity().get(article.pmcId) + ",\t");
+                    }
+                }
+                bw.write("\n");
             }
             bw.close();
         } catch (IOException e) {
@@ -110,10 +116,17 @@ public class Analysis {
 
         for(Article article: articles){
             article.tokenize(StopWords);
+            int MaxFreq = 0;
+            String maxFreqTerm = "";
+
             Map<String,Map<String,Integer>> test = createVocabulary(article);
             article.setVocabulary(test);
+
             for(String w : test.keySet()) {
+                // Set Document Frequency
                 Map<Integer,Map<String, Integer>> TagFrequency = new HashMap<>();
+                // Set Term Frequency
+                Map<Integer, Integer> tf = new HashMap<>();
                 Word x;
                 if(!Words.containsKey(w)) {
                     x = new Word(w);
@@ -124,16 +137,36 @@ public class Analysis {
                 TagFrequency.put(article.pmcId,freqArticle);
                 x.setTagFrequency(TagFrequency);
 
+                int sum = 0;
+                for (int value : freqArticle.values()){
+                    sum += value;
+                }
+                if(sum > MaxFreq) {
+                    MaxFreq = sum;
+                    maxFreqTerm = w;
+                }
+                tf.put(article.pmcId, sum);
+                x.setTermFrequecy(tf);
             }
+            article.setMaxFrequency(MaxFreq);
+            article.setMaxFrequencyTerm(maxFreqTerm);
 
         }
         for(Map.Entry<String,Word> entry: Words.entrySet()) {
-            System.out.print(entry.getKey()+" ");
+            /*.out.print(entry.getKey()+" ");
             System.out.print(entry.getValue().getTagFrequency()+"------");
-            System.out.println(entry.getValue().getTagFrequency().size());
+            System.out.print(entry.getValue().getTagFrequency().size()+"------");
+            System.out.print(entry.getValue().getTagFrequency()+"------");
+            System.out.print(entry.getValue().getTermFrequecy());*/
             int dF = entry.getValue().getTagFrequency().size();
             entry.getValue().setdF(dF);
+            entry.getValue().setCosSimilarity(articles);
+            System.out.println(entry.getValue().getValue()+"------" + entry.getValue().getCosSimilarity());
         }
+        for(Article article: articles){
+            System.out.println(article.pmcId+"\t"+article.getMaxFrequency() + " \t" + article.getMaxFrequencyTerm());
+        }
+
         createCollectionIndex();
 
     } // listFilesForFolder

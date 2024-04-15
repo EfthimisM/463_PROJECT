@@ -21,6 +21,8 @@ public class Article {
     ArrayList<String> authors;
     HashSet<String> categories;
     private Map<String, Map<String,Integer>> vocabulary;
+    private int maxFrequency;
+    private String maxFrequencyTerm;
     String path;
 
     public Article(int id, String tt, String ab, String bod, String j, String pub, ArrayList<String> auth, HashSet<String> cat, String path){
@@ -111,4 +113,19 @@ public class Article {
         return vocabulary;
     }
 
+    public int getMaxFrequency() {
+        return maxFrequency;
+    }
+
+    public String getMaxFrequencyTerm() {
+        return maxFrequencyTerm;
+    }
+
+    public void setMaxFrequency(int maxFrequency) {
+        this.maxFrequency = maxFrequency;
+    }
+
+    public void setMaxFrequencyTerm(String maxFrequencyTerm) {
+        this.maxFrequencyTerm = maxFrequencyTerm;
+    }
 }
