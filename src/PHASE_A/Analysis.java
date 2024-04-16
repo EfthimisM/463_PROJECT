@@ -47,6 +47,7 @@ public class Analysis {
             BufferedWriter bw = new BufferedWriter(writer);
             // Write like this: bw.write("asd");
             for(Map.Entry<String,Word> entry: Words.entrySet()){
+                // if
                 bw.write(entry.getKey() + "\t"+ entry.getValue().getdF() + "\n");
             }
             bw.close();
@@ -64,8 +65,8 @@ public class Analysis {
             for(Article article: articles){
                 bw.write(article.pmcId + "\t"+ article.path+ "\n");
                 for(Map.Entry<String,Word> entry: Words.entrySet()){
-                    if(entry.getValue().getCosSimilarity().containsKey(article.pmcId)){
-                        bw.write(entry.getValue().getValue() +"\t" + entry.getValue().getCosSimilarity().get(article.pmcId) + ",\t");
+                    if(entry.getValue().getTdIDFweight().containsKey(article.pmcId)){
+                        bw.write(entry.getValue().getValue() +"\t" + entry.getValue().getTdIDFweight().get(article.pmcId) + ",\t");
                     }
                 }
                 bw.write("\n");
@@ -160,8 +161,8 @@ public class Analysis {
             System.out.print(entry.getValue().getTermFrequecy());*/
             int dF = entry.getValue().getTagFrequency().size();
             entry.getValue().setdF(dF);
-            entry.getValue().setCosSimilarity(articles);
-            System.out.println(entry.getValue().getValue()+"------" + entry.getValue().getCosSimilarity());
+            entry.getValue().setTdIDFweight(articles);
+            System.out.println(entry.getValue().getValue()+"------" + entry.getValue().getTdIDFweight());
         }
         for(Article article: articles){
             System.out.println(article.pmcId+"\t"+article.getMaxFrequency() + " \t" + article.getMaxFrequencyTerm());

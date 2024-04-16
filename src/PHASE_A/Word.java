@@ -35,7 +35,7 @@ public class Word {
      * Integer : document Id
      * Double : Cosine similarity of the term in the given document
      */
-    private Map<Integer, Double> cosSimilarity = new HashMap<>();
+    private Map<Integer, Double> TdIDFweight = new HashMap<>();
 
     public Word(String word){
         this.value = word;
@@ -78,16 +78,25 @@ public class Word {
         WordDocumentRank = wordDocumentRank;
     }
 
-    public Map<Integer, Double> getCosSimilarity() {
-        return cosSimilarity;
+    public Map<Integer, Double> getTdIDFweight() {
+        return TdIDFweight;
     }
 
-    public void setCosSimilarity(ArrayList<Article> articles){
+    public void setTdIDFweight(ArrayList<Article> articles){
         for(Article article : articles){
             if(TermFrequecy.containsKey(article.pmcId)){
                 double tf = (double) TermFrequecy.get(article.pmcId) / article.getMaxFrequency();
                 double idf = Math.log( articles.size()/ (double) dF) / Math.log(2);
-                cosSimilarity.put(article.pmcId, tf * idf);
+                if(this.TagFrequency.get(article.pmcId).containsKey("Title")){
+                    tf *= 2.5;
+                }
+                if(this.TagFrequency.get(article.pmcId).containsKey("Authors")){
+                    tf *= 2;
+                }
+                if(this.TagFrequency.get(article.pmcId).containsKey("Categories")){
+                    tf *= 1.5;
+                }
+                TdIDFweight.put(article.pmcId, tf * idf);
             }
         }
     }
