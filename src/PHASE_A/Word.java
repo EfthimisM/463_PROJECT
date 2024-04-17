@@ -12,7 +12,7 @@ public class Word {
      * String : tag
      * Integer(inside of map) : frequency
      */
-    private Map<Integer,Map<String, Integer>> TagFrequency = new HashMap<>();
+   private Map<Integer,Map<String,ArrayList<Integer>>> TagFrequency = new HashMap<>();
     /**
      * String : Word Value
      */
@@ -41,7 +41,7 @@ public class Word {
         this.value = word;
     }
 
-    public Map<Integer, Map<String, Integer>> getTagFrequency() {
+    public Map<Integer, Map<String, ArrayList<Integer>>> getTagFrequency() {
         return TagFrequency;
     }
 
@@ -66,7 +66,7 @@ public class Word {
         return value;
     }
 
-    public void setTagFrequency(Map<Integer, Map<String, Integer>> tagFrequency) {
+    public void setTagFrequency( Map<Integer,Map<String,ArrayList<Integer>>> tagFrequency) {
         TagFrequency.putAll(tagFrequency);
     }
 
