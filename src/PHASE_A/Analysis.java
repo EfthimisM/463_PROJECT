@@ -171,12 +171,12 @@ public class Analysis {
             int MaxFreq = 0;
             String maxFreqTerm = "";
 
-            Map<String,Map<String,Integer>> test = createVocabulary(article);
+            Map<String,Map<String,ArrayList<Integer>>> test = createVocabulary(article);
             article.setVocabulary(test);
 
             for(String w : test.keySet()) {
                 // Set Tag Frequency
-                Map<Integer,Map<String, Integer>> TagFrequency = new HashMap<>();
+                Map<Integer,Map<String,ArrayList<Integer>>> TagFrequency = new HashMap<>();
                 // Set Term Frequency
                 Map<Integer, Integer> tf = new HashMap<>();
 
@@ -185,7 +185,7 @@ public class Analysis {
                     x = new Word(w);
                     Words.put(w,x);
                 }
-                Map<String, Integer> freqArticle = test.get(w);
+                Map<String,ArrayList<Integer>> freqArticle = test.get(w);
                 x = Words.get(w);
                 TagFrequency.put(article.pmcId,freqArticle);
                 x.setTagFrequency(TagFrequency);
@@ -223,74 +223,72 @@ public class Analysis {
     }
 
 
-    private Map<String,Map<String,Integer>> createVocabulary(Article a) {
-        Map<String,Map<String,Integer>> vocabulary = new TreeMap<>();
+    private Map<String,Map<String,ArrayList<Integer>>> createVocabulary(Article a) {
+        Map<String,Map<String,ArrayList<Integer>>>  vocabulary = new TreeMap<>();
 
         Integer ID = a.pmcId;
+        Integer title_counter = 0;
         for (String w : a.titleTokenized) {
             if (!vocabulary.containsKey(w)) {
                 vocabulary.put(w, new HashMap<>());
             }
-            Map<String, Integer> temp1 = vocabulary.get(w);
-            temp1.put("Title", temp1.getOrDefault("Title", 0) + 1);
+            Map<String,ArrayList<Integer>> temp1 = vocabulary.get(w);
+            temp1.put("Title", temp1.getOrDefault("Title", new ArrayList<Integer>()));
+            ArrayList<Integer> temp2 = temp1.get("Title");
+            temp2.add(title_counter++);
+            temp1.put("Title",temp2);
             vocabulary.put(w,temp1);
         }
         // MAP : <"Malaria", { {title = 3} , {abstract = 5},
+        Integer abstract_counter = 0;
         for (String w : a.abstrTokenized) {
             if (!vocabulary.containsKey(w)) {
                 vocabulary.put(w, new HashMap<>());
             }
-            Map<String, Integer> temp1 = vocabulary.get(w);
-            temp1.put("Abstract", temp1.getOrDefault("Abstract", 0) + 1);
+            Map<String,ArrayList<Integer>> temp1 = vocabulary.get(w);
+            temp1.put("Abstract", temp1.getOrDefault("Abstract", new ArrayList<Integer>()));
+            ArrayList<Integer> temp2 = temp1.get("Abstract");
+            temp2.add(abstract_counter++);
+            temp1.put("Abstract",temp2);
             vocabulary.put(w,temp1);
         }
-
+        Integer body_counter = 0;
         for (String w : a.bodyTokenized) {
             if (!vocabulary.containsKey(w)) {
                 vocabulary.put(w, new HashMap<>());
             }
-            Map<String, Integer> temp1 = vocabulary.get(w);
-            temp1.put("Body", temp1.getOrDefault("Body", 0) + 1);
+            Map<String,ArrayList<Integer>> temp1 = vocabulary.get(w);
+            temp1.put("Body", temp1.getOrDefault("Body", new ArrayList<Integer>()));
+            ArrayList<Integer> temp2 = temp1.get("Body");
+            temp2.add(body_counter++);
+            temp1.put("Body",temp2);
             vocabulary.put(w,temp1);
         }
-
+        Integer journal_counter = 0;
         for (String w : a.journalTokenized) {
             if (!vocabulary.containsKey(w)) {
                 vocabulary.put(w, new HashMap<>());
             }
-            Map<String, Integer> temp1 = vocabulary.get(w);
-            temp1.put("Journal", temp1.getOrDefault("Journal", 0) + 1);
+            Map<String,ArrayList<Integer>> temp1 = vocabulary.get(w);
+
+            temp1.put("Journal", temp1.getOrDefault("Journal", new ArrayList<Integer>()));
+            ArrayList<Integer> temp2 = temp1.get("Journal");
+            temp2.add(journal_counter++);
+            temp1.put("Journal",temp2);
             vocabulary.put(w,temp1);
         }
+        Integer publisher_counter = 0;
         for (String w : a.publisherTokenized) {
             if (!vocabulary.containsKey(w)) {
                 vocabulary.put(w, new HashMap<>());
             }
-            Map<String, Integer> temp1 = vocabulary.get(w);
-            temp1.put("Publisher", temp1.getOrDefault("Publisher", 0) + 1);
+            Map<String,ArrayList<Integer>> temp1 = vocabulary.get(w);
+            temp1.put("Publisher", temp1.getOrDefault("Publisher", new ArrayList<Integer>()));
+            ArrayList<Integer> temp2 = temp1.get("Publisher");
+            temp2.add(publisher_counter++);
+            temp1.put("Publisher",temp2);
             vocabulary.put(w,temp1);
         }
-
-        for(String w : a.authors){
-            if (!vocabulary.containsKey(w)) {
-                vocabulary.put(w, new HashMap<>());
-            }
-            Map<String, Integer> temp1 = vocabulary.get(w);
-            temp1.put("Authors", temp1.getOrDefault("Authors", 0) + 1);
-            vocabulary.put(w,temp1);
-        }
-
-        for(String w : a.categories){
-            if (!vocabulary.containsKey(w)) {
-                vocabulary.put(w, new HashMap<>());
-            }
-            Map<String, Integer> temp1 = vocabulary.get(w);
-            temp1.put("Categories", temp1.getOrDefault("Categories", 0) + 1);
-            vocabulary.put(w,temp1);
-        }
-
-        System.out.println(vocabulary);
-
         return vocabulary;
     }
 }
