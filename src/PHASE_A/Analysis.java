@@ -1,6 +1,7 @@
 package PHASE_A;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.*;
 
 import gr.uoc.csd.hy463.NXMLFileReader;
@@ -10,6 +11,8 @@ public class Analysis {
     private ArrayList<Article> articles = new ArrayList<>();
     private Map<String,Word> Words = new TreeMap<>();
     private List<String> StopWords;
+    // 4 kBytes
+    private static final int MEM_THRESHOLD = 4096;
 
     public Analysis(File folder, File stopwords){
         List<String> stp = new ArrayList<>();
@@ -35,20 +38,64 @@ public class Analysis {
         }
     }
 
+    private static void deleteFolder(File folder) {
+        if (folder.exists()) {
+            File[] files = folder.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        deleteFolder(file);
+                    } else {
+                        file.delete();
+                    }
+                }
+            }
+            folder.delete();
+        }
+    }
+
     private void createCollectionIndex(){
         File folder = new File("CollectionIndex");
+        deleteFolder(folder);
         folder.mkdir();
+        int currentMemory = 0;
+        int index = 0;
 
-        File vocabularyFile = new File(folder, "VocabularyFile.txt");
-        clearFile(vocabularyFile);
-        
+        File vocabularyFile = new File(folder, "VocabularyFile"+ index+".txt");
         try {
             FileWriter writer = new FileWriter(vocabularyFile, true);
             BufferedWriter bw = new BufferedWriter(writer);
             // Write like this: bw.write("asd");
             for(Map.Entry<String,Word> entry: Words.entrySet()){
-                // if
-                bw.write(entry.getKey() + "\t"+ entry.getValue().getdF() + "\n");
+                // Check if we exced the memory threshold
+                currentMemory += entry.getKey().getBytes().length;
+                byte[] bytesStr = entry.getKey().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                byte[] bytesInteger = ByteBuffer.allocate(Integer.BYTES).putInt(entry.getValue().getdF()).array();
+                byte[] bytes = new byte[bytesStr.length + bytesInteger.length];
+                String byteStream ="";
+                for(int i = 0; i < bytesStr.length; i++){
+                    bytes[i] = bytesStr[i];
+                    byteStream += bytes[i];
+                }
+                for(int j = 0; j < bytesInteger.length; j++){
+                    bytes[bytesStr.length + j] = bytesInteger[j];
+                    byteStream += bytes[j];
+                }
+                currentMemory += bytes.length;
+                if(currentMemory > MEM_THRESHOLD){
+                    bw.close();
+                    currentMemory = 0;
+                    System.out.println(vocabularyFile.length());
+                    index++;
+                    vocabularyFile = new File(folder, "VocabularyFile" + index + ".txt");
+                    writer = new FileWriter(vocabularyFile, true);
+                    bw = new BufferedWriter(writer);
+                    //bw.write(entry.getKey() + "\t"+ entry.getValue().getdF() + "\t" + byteStream + "\n");
+                    bw.write(entry.getKey() + "\t"+ entry.getValue().getdF() +"\n");
+                }else{
+                    //bw.write(entry.getKey() + "\t"+ entry.getValue().getdF() + "\t" + byteStream + "\n");
+                    bw.write(entry.getKey() + "\t"+ entry.getValue().getdF()+"\n");
+                }
             }
             bw.close();
         } catch (IOException e) {
@@ -113,7 +160,11 @@ public class Analysis {
 
             }
         }
+        generate();
 
+    } // listFilesForFolder
+
+    private void generate(){
 
         for(Article article: articles){
             article.tokenize(StopWords);
@@ -124,10 +175,11 @@ public class Analysis {
             article.setVocabulary(test);
 
             for(String w : test.keySet()) {
-                // Set Document Frequency
+                // Set Tag Frequency
                 Map<Integer,Map<String, Integer>> TagFrequency = new HashMap<>();
                 // Set Term Frequency
                 Map<Integer, Integer> tf = new HashMap<>();
+
                 Word x;
                 if(!Words.containsKey(w)) {
                     x = new Word(w);
@@ -154,11 +206,6 @@ public class Analysis {
 
         }
         for(Map.Entry<String,Word> entry: Words.entrySet()) {
-            /*.out.print(entry.getKey()+" ");
-            System.out.print(entry.getValue().getTagFrequency()+"------");
-            System.out.print(entry.getValue().getTagFrequency().size()+"------");
-            System.out.print(entry.getValue().getTagFrequency()+"------");
-            System.out.print(entry.getValue().getTermFrequecy());*/
             int dF = entry.getValue().getTagFrequency().size();
             entry.getValue().setdF(dF);
             entry.getValue().setTdIDFweight(articles);
@@ -169,8 +216,7 @@ public class Analysis {
         }
 
         createCollectionIndex();
-
-    } // listFilesForFolder
+    }
 
     private ArrayList<Article> getArticles() {
         return articles;

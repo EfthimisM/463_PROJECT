@@ -63,9 +63,11 @@ public class Article {
         journalTokenized = new ArrayList<>();
         publisherTokenized = new ArrayList<>();
 
+        int rank = 0;
         //title
         String[] words = title.split(" ");
         for(String word: words){
+            rank ++;
             String tmp = tokenize(word, stopWords);
             if(!tmp.endsWith("A")){
                 titleTokenized.add(Stemmer.Stem(tmp));
@@ -74,6 +76,7 @@ public class Article {
         //abs
         words = abstr.split(" ");
         for(String word: words){
+            rank ++;
             String tmp = tokenize(word, stopWords);
             if(!tmp.endsWith("A")){
                 abstrTokenized.add(Stemmer.Stem(tmp));
@@ -82,6 +85,7 @@ public class Article {
         //body
         words = body.split(" ");
         for(String word: words){
+            rank ++;
             String tmp = tokenize(word, stopWords);
             if(!tmp.endsWith("A")){
                 bodyTokenized.add(Stemmer.Stem(tmp));
@@ -90,6 +94,7 @@ public class Article {
 
         words = journal.split(" ");
         for(String word: words){
+            rank ++;
             String tmp = tokenize(word, stopWords);
             if(!tmp.endsWith("A")){
                 journalTokenized.add(Stemmer.Stem(tmp));
@@ -98,6 +103,7 @@ public class Article {
 
         words = publisher.split(" ");
         for(String word: words){
+            rank ++;
             String tmp = tokenize(word, stopWords);
             if(!tmp.endsWith("A")){
                 publisherTokenized.add(Stemmer.Stem(tmp));
