@@ -20,7 +20,7 @@ public class Article {
     ArrayList<String> publisherTokenized;
     ArrayList<String> authors;
     HashSet<String> categories;
-    private Map<String, Map<String,Integer>> vocabulary;
+    Map<String,Map<String,ArrayList<Integer>>> vocabulary;
     private int maxFrequency;
     private String maxFrequencyTerm;
     String path;
@@ -111,11 +111,11 @@ public class Article {
         }
 
     }
-    public void setVocabulary(Map<String, Map<String,Integer>> vocabulary) {
+    public void setVocabulary(Map<String,Map<String,ArrayList<Integer>>> vocabulary) {
         this.vocabulary = vocabulary;
     }
 
-    public Map<String, Map<String, Integer>> getVocabulary() {
+    public Map<String,Map<String,ArrayList<Integer>>> getVocabulary() {
         return vocabulary;
     }
 
