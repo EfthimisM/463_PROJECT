@@ -5,6 +5,9 @@ import java.nio.ByteBuffer;
 import java.util.*;
 
 import gr.uoc.csd.hy463.NXMLFileReader;
+
+import static java.lang.Math.sqrt;
+
 public class Analysis {
 
 
@@ -13,6 +16,8 @@ public class Analysis {
     private List<String> StopWords;
     // 4 kBytes
     private static final int MEM_THRESHOLD = 4096;
+    //
+    private static final Queue<String> filesQueue = new ArrayDeque<>();
 
     public Analysis(File folder, File stopwords){
         List<String> stp = new ArrayList<>();
@@ -54,6 +59,28 @@ public class Analysis {
         }
     }
 
+    private void createPostingFile(File file,File folder,int index){
+        File postingFile = new File(folder, "PostingFile" + index + ".txt");
+        //add to a different queue
+        try{
+            FileWriter writer = new FileWriter(postingFile, true);
+            BufferedWriter postingw = new BufferedWriter(writer);
+            BufferedReader vocabRead = new BufferedReader(new FileReader(file));
+            BufferedWriter vocabWrite = new BufferedWriter(new FileWriter(file, true));
+
+            String line;
+            while((line = vocabRead.readLine()) != null){
+
+            }
+
+            //postingw.write("KAPA");
+            //postingw.close();
+        }catch (IOException e) {
+            System.out.println("An error occurred while creating the file: " + e.getMessage());
+        }
+
+    }
+
     private void createCollectionIndex(){
         File folder = new File("CollectionIndex");
         deleteFolder(folder);
@@ -62,10 +89,16 @@ public class Analysis {
         int index = 0;
 
         File vocabularyFile = new File(folder, "VocabularyFile"+ index+".txt");
+        filesQueue.add(vocabularyFile.getAbsolutePath());
         try {
             FileWriter writer = new FileWriter(vocabularyFile, true);
             BufferedWriter bw = new BufferedWriter(writer);
             // Write like this: bw.write("asd");
+            for(Article article:articles){
+                for(Map.Entry<String,Map<String,ArrayList<Integer>>> entry : article.getVocabulary().entrySet()) {
+
+                }
+            }
             for(Map.Entry<String,Word> entry: Words.entrySet()){
                 // Check if we exced the memory threshold
                 currentMemory += entry.getKey().getBytes().length;
@@ -83,11 +116,13 @@ public class Analysis {
                 }
                 currentMemory += bytes.length;
                 if(currentMemory > MEM_THRESHOLD){
+                    createPostingFile(vocabularyFile,folder,index);
                     bw.close();
                     currentMemory = 0;
                     System.out.println(vocabularyFile.length());
                     index++;
                     vocabularyFile = new File(folder, "VocabularyFile" + index + ".txt");
+                    filesQueue.add(vocabularyFile.getAbsolutePath());
                     writer = new FileWriter(vocabularyFile, true);
                     bw = new BufferedWriter(writer);
                     //bw.write(entry.getKey() + "\t"+ entry.getValue().getdF() + "\t" + byteStream + "\n");
@@ -97,6 +132,7 @@ public class Analysis {
                     bw.write(entry.getKey() + "\t"+ entry.getValue().getdF()+"\n");
                 }
             }
+            createPostingFile(vocabularyFile,folder,index);
             bw.close();
         } catch (IOException e) {
             System.out.println("An error occurred while creating the file: " + e.getMessage());
@@ -111,12 +147,14 @@ public class Analysis {
             // Write like this: bw.write("asd");
             for(Article article: articles){
                 bw.write(article.pmcId + "\t"+ article.path+ "\n");
+                double norm = 0;
                 for(Map.Entry<String,Word> entry: Words.entrySet()){
                     if(entry.getValue().getTdIDFweight().containsKey(article.pmcId)){
-                        bw.write(entry.getValue().getValue() +"\t" + entry.getValue().getTdIDFweight().get(article.pmcId) + ",\t");
+                        norm += entry.getValue().getTdIDFweight().get(article.pmcId)* entry.getValue().getTdIDFweight().get(article.pmcId);
                     }
                 }
-                bw.write("\n");
+                norm = sqrt(norm);
+                bw.write(norm + "\n");
             }
             bw.close();
         } catch (IOException e) {
@@ -189,10 +227,9 @@ public class Analysis {
                 x = Words.get(w);
                 TagFrequency.put(article.pmcId,freqArticle);
                 x.setTagFrequency(TagFrequency);
-
                 int sum = 0;
-                for (int value : freqArticle.values()){
-                    sum += value;
+                for (ArrayList<Integer> value: freqArticle.values()){
+                    sum += value.size();
                 }
                 if(sum > MaxFreq) {
                     MaxFreq = sum;
@@ -209,10 +246,10 @@ public class Analysis {
             int dF = entry.getValue().getTagFrequency().size();
             entry.getValue().setdF(dF);
             entry.getValue().setTdIDFweight(articles);
-            System.out.println(entry.getValue().getValue()+"------" + entry.getValue().getTdIDFweight());
+            //System.out.println(entry.getValue().getValue()+"------" + entry.getValue().getTdIDFweight());
         }
         for(Article article: articles){
-            System.out.println(article.pmcId+"\t"+article.getMaxFrequency() + " \t" + article.getMaxFrequencyTerm());
+            // System.out.println(article.pmcId+"\t"+article.getMaxFrequency() + " \t" + article.getMaxFrequencyTerm());
         }
 
         createCollectionIndex();

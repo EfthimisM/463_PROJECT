@@ -21,6 +21,7 @@ public class Article {
     ArrayList<String> authors;
     HashSet<String> categories;
     Map<String,Map<String,ArrayList<Integer>>> vocabulary;
+    ArrayList<Word> vocab = new ArrayList<>();
     private int maxFrequency;
     private String maxFrequencyTerm;
     String path;

@@ -28,9 +28,9 @@ public class Word {
     private Map<Integer, Integer> TermFrequecy = new HashMap<>();
     /**
      * Integer : document ID
-     * ArrayList of Integers : position where the term is found in the document
+     * ArrayList of Integers : position where the term is found in the document in each tag
      */
-    private Map<Integer, ArrayList<Integer>> WordDocumentRank = new HashMap<>();
+    private Map<Integer,Map <String ,ArrayList<Integer>>> WordDocumentRank = new HashMap<>();
     /**
      * Integer : document Id
      * Double : Cosine similarity of the term in the given document
@@ -47,11 +47,6 @@ public class Word {
 
     public Map<Integer, Integer> getTermFrequecy() {
         return TermFrequecy;
-    }
-
-    public Map<Integer, ArrayList<Integer>> getWordDocumentRank() {
-        return WordDocumentRank;
-
     }
 
     public void setdF(int dF) {
@@ -72,10 +67,6 @@ public class Word {
 
     public void setTermFrequecy(Map<Integer, Integer> termFrequecy) {
         TermFrequecy.putAll(termFrequecy);
-    }
-
-    public void setWordDocumentRank(Map<Integer, ArrayList<Integer>> wordDocumentRank) {
-        WordDocumentRank = wordDocumentRank;
     }
 
     public Map<Integer, Double> getTdIDFweight() {
