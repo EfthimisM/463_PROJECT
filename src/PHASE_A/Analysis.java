@@ -15,7 +15,7 @@ public class Analysis {
     private Map<String,Word> Words = new TreeMap<>();
     private List<String> StopWords;
     // 4 kBytes
-    private static final int MEM_THRESHOLD = 4096;
+    private static final int MEM_THRESHOLD = 6000;
     //
     private static final Queue<String> filesQueue = new ArrayDeque<>();
 
@@ -63,18 +63,28 @@ public class Analysis {
         File postingFile = new File(folder, "PostingFile" + index + ".txt");
         //add to a different queue
         try{
-            FileWriter writer = new FileWriter(postingFile, true);
-            BufferedWriter postingw = new BufferedWriter(writer);
-            BufferedReader vocabRead = new BufferedReader(new FileReader(file));
-            BufferedWriter vocabWrite = new BufferedWriter(new FileWriter(file, true));
+            BufferedWriter writePost = new BufferedWriter(new FileWriter(postingFile, true));
+            BufferedWriter writeVocab = new BufferedWriter(new FileWriter(file, true));
+            BufferedReader reader = new BufferedReader(new FileReader(file));
 
             String line;
-            while((line = vocabRead.readLine()) != null){
+            while((line = reader.readLine()) != null){
+                String[] words = line.split("\\s+");
+                String word = words[0];
+                Word term = this.Words.get(word);
+                Map<Integer,Map<String, ArrayList<Integer>>> tagFrequency= term.getTagFrequency();
+                for(Integer id : term.getTagFrequency().keySet()){
+                    Integer termFreq = term.getTermFrequecy().get(id);
+                    writePost.write(word + "\t"+id +"\t" + termFreq + "\t" + tagFrequency + "\n");
+                }
+                line  +=  "\t" + "POINTER" + "\n";
+                writeVocab.write(line);
+                //writePost.write( + "\n");
 
             }
-
-            //postingw.write("KAPA");
-            //postingw.close();
+            reader.close();
+            writeVocab.close();
+            writePost.close();
         }catch (IOException e) {
             System.out.println("An error occurred while creating the file: " + e.getMessage());
         }
@@ -116,8 +126,9 @@ public class Analysis {
                 }
                 currentMemory += bytes.length;
                 if(currentMemory > MEM_THRESHOLD){
-                    createPostingFile(vocabularyFile,folder,index);
                     bw.close();
+                    createPostingFile(vocabularyFile,folder,index);
+
                     currentMemory = 0;
                     System.out.println(vocabularyFile.length());
                     index++;
