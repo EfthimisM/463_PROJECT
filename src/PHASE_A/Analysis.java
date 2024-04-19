@@ -16,8 +16,10 @@ public class Analysis {
     private List<String> StopWords;
     // 4 kBytes
     private static final int MEM_THRESHOLD = 6000;
-    //
-    private static final Queue<String> filesQueue = new ArrayDeque<>();
+    // Partial vocab Files queue
+    private static final Queue<String> VocabQueue = new ArrayDeque<>();
+    // Partial Posting Files queue
+    private static final Queue<String> PostingQueue = new ArrayDeque<>();
 
     public Analysis(File folder, File stopwords){
         List<String> stp = new ArrayList<>();
@@ -35,6 +37,8 @@ public class Analysis {
         }
         StopWords = stp;
         listFilesForFolder(folder);
+        Merge();
+
     }
 
     private static void clearFile(File file) {
@@ -62,9 +66,9 @@ public class Analysis {
     private void createPostingFile(File file,File folder,int index){
         File postingFile = new File(folder, "PostingFile" + index + ".txt");
         //add to a different queue
+        PostingQueue.add(postingFile.getAbsolutePath());
         try{
             BufferedWriter writePost = new BufferedWriter(new FileWriter(postingFile, true));
-            BufferedWriter writeVocab = new BufferedWriter(new FileWriter(file, true));
             BufferedReader reader = new BufferedReader(new FileReader(file));
 
             String line;
@@ -77,13 +81,10 @@ public class Analysis {
                     Integer termFreq = term.getTermFrequecy().get(id);
                     writePost.write(word + "\t"+id +"\t" + termFreq + "\t" + tagFrequency + "\n");
                 }
-                line  +=  "\t" + "POINTER" + "\n";
-                writeVocab.write(line);
                 //writePost.write( + "\n");
 
             }
             reader.close();
-            writeVocab.close();
             writePost.close();
         }catch (IOException e) {
             System.out.println("An error occurred while creating the file: " + e.getMessage());
@@ -91,56 +92,56 @@ public class Analysis {
 
     }
 
+    private int generatePointer(Word word){
+        String str = "";
+        for(Integer id : word.getTagFrequency().keySet()){
+            str += word.getValue() + "\t" + id + "\t" + word.getTermFrequecy().get(id) + "\t" + word.getTagFrequency() + "\n";
+        }
+        byte[] bytes = str.getBytes();
+        return bytes.length;
+    }
+
     private void createCollectionIndex(){
+        System.out.println("Indexing...");
         File folder = new File("CollectionIndex");
         deleteFolder(folder);
         folder.mkdir();
         int currentMemory = 0;
         int index = 0;
+        long postingPointer = 0;
 
         File vocabularyFile = new File(folder, "VocabularyFile"+ index+".txt");
-        filesQueue.add(vocabularyFile.getAbsolutePath());
+        VocabQueue.add(vocabularyFile.getAbsolutePath());
         try {
             FileWriter writer = new FileWriter(vocabularyFile, true);
             BufferedWriter bw = new BufferedWriter(writer);
+            String line = "";
             // Write like this: bw.write("asd");
-            for(Article article:articles){
-                for(Map.Entry<String,Map<String,ArrayList<Integer>>> entry : article.getVocabulary().entrySet()) {
-
-                }
-            }
             for(Map.Entry<String,Word> entry: Words.entrySet()){
                 // Check if we exced the memory threshold
-                currentMemory += entry.getKey().getBytes().length;
-                byte[] bytesStr = entry.getKey().getBytes(java.nio.charset.StandardCharsets.UTF_8);
-                byte[] bytesInteger = ByteBuffer.allocate(Integer.BYTES).putInt(entry.getValue().getdF()).array();
-                byte[] bytes = new byte[bytesStr.length + bytesInteger.length];
-                String byteStream ="";
-                for(int i = 0; i < bytesStr.length; i++){
-                    bytes[i] = bytesStr[i];
-                    byteStream += bytes[i];
-                }
-                for(int j = 0; j < bytesInteger.length; j++){
-                    bytes[bytesStr.length + j] = bytesInteger[j];
-                    byteStream += bytes[j];
-                }
-                currentMemory += bytes.length;
+                byte[] lineBytes = line.getBytes();
+                currentMemory += lineBytes.length;
                 if(currentMemory > MEM_THRESHOLD){
                     bw.close();
                     createPostingFile(vocabularyFile,folder,index);
 
                     currentMemory = 0;
-                    System.out.println(vocabularyFile.length());
                     index++;
+
                     vocabularyFile = new File(folder, "VocabularyFile" + index + ".txt");
-                    filesQueue.add(vocabularyFile.getAbsolutePath());
+                    VocabQueue.add(vocabularyFile.getAbsolutePath());
                     writer = new FileWriter(vocabularyFile, true);
                     bw = new BufferedWriter(writer);
-                    //bw.write(entry.getKey() + "\t"+ entry.getValue().getdF() + "\t" + byteStream + "\n");
-                    bw.write(entry.getKey() + "\t"+ entry.getValue().getdF() +"\n");
+
+                    postingPointer = 0;
+                    line = entry.getKey() + "\t"+ entry.getValue().getdF()+"\t" + postingPointer + "\n";
+                    bw.write(line);
+                    postingPointer += generatePointer(entry.getValue());
+
                 }else{
-                    //bw.write(entry.getKey() + "\t"+ entry.getValue().getdF() + "\t" + byteStream + "\n");
-                    bw.write(entry.getKey() + "\t"+ entry.getValue().getdF()+"\n");
+                    line = entry.getKey() + "\t"+ entry.getValue().getdF()+"\t" + postingPointer + "\n";
+                    bw.write(line);
+                    postingPointer += generatePointer(entry.getValue());
                 }
             }
             createPostingFile(vocabularyFile,folder,index);
@@ -339,4 +340,17 @@ public class Analysis {
         }
         return vocabulary;
     }
+
+    private void Merge(){
+        System.out.println("Merging...");
+        while(!VocabQueue.isEmpty()){
+            if(VocabQueue.size() == 1){
+                System.out.println("Merging:" + VocabQueue.remove());
+            }else{
+                System.out.println("Merging:" + VocabQueue.remove() + "\t" +VocabQueue.remove() );
+            }
+
+        }
+    }
 }
+
