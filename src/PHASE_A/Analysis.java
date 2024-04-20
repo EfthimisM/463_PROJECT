@@ -2,8 +2,8 @@ package PHASE_A;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
-
 import gr.uoc.csd.hy463.NXMLFileReader;
 
 import static java.lang.Math.sqrt;
@@ -15,7 +15,7 @@ public class Analysis {
     private Map<String,Word> Words = new TreeMap<>();
     private List<String> StopWords;
     // 4 kBytes
-    private static final int MEM_THRESHOLD = 6000;
+    private static final int MEM_THRESHOLD = 512 * 512;
     // Partial vocab Files queue
     private static final Queue<String> VocabQueue = new ArrayDeque<>();
     // Partial Posting Files queue
@@ -37,7 +37,7 @@ public class Analysis {
         }
         StopWords = stp;
         listFilesForFolder(folder);
-        Merge();
+
 
     }
 
@@ -73,16 +73,20 @@ public class Analysis {
 
             String line;
             while((line = reader.readLine()) != null){
-                String[] words = line.split("\\s+");
+                String[] words = line.split("\t");
                 String word = words[0];
-                Word term = this.Words.get(word);
-                Map<Integer,Map<String, ArrayList<Integer>>> tagFrequency= term.getTagFrequency();
-                for(Integer id : term.getTagFrequency().keySet()){
-                    Integer termFreq = term.getTermFrequecy().get(id);
-                    writePost.write(word + "\t"+id +"\t" + termFreq + "\t" + tagFrequency + "\n");
-                }
-                //writePost.write( + "\n");
 
+                Word term = this.Words.get(word);
+                if(term == null){
+                    System.out.println("EIMASTE: "+ word);
+                }else{
+                    Map<Integer,Map<String, ArrayList<Integer>>> tagFrequency= term.getTagFrequency();
+                    for(Map.Entry<Integer,Map<String, ArrayList<Integer>>> entry : term.getTagFrequency().entrySet()){
+                        Integer id = entry.getKey();
+                        Integer termFreq = term.getTermFrequecy().get(id); // has error here
+                        writePost.write(id +"\t" + termFreq + "\t" + tagFrequency + "\n");
+                    }
+                }
             }
             reader.close();
             writePost.close();
@@ -95,62 +99,37 @@ public class Analysis {
     private int generatePointer(Word word){
         String str = "";
         for(Integer id : word.getTagFrequency().keySet()){
-            str += word.getValue() + "\t" + id + "\t" + word.getTermFrequecy().get(id) + "\t" + word.getTagFrequency() + "\n";
+            str +=id + "\t" + word.getTermFrequecy().get(id) +"\t"+ word.getTagFrequency() +"\n";
         }
         byte[] bytes = str.getBytes();
         return bytes.length;
     }
 
-    private void createCollectionIndex(){
+    private void createCollectionIndex(File folder, int index){
         System.out.println("Indexing...");
-        File folder = new File("CollectionIndex");
-        deleteFolder(folder);
-        folder.mkdir();
-        int currentMemory = 0;
-        int index = 0;
         long postingPointer = 0;
 
-        File vocabularyFile = new File(folder, "VocabularyFile"+ index+".txt");
-        VocabQueue.add(vocabularyFile.getAbsolutePath());
+        File vocabularyFile = new File(folder, "VocabularyFile"+index+".txt");
+        VocabQueue.add(vocabularyFile.getAbsolutePath());   // Merging
         try {
             FileWriter writer = new FileWriter(vocabularyFile, true);
             BufferedWriter bw = new BufferedWriter(writer);
             String line = "";
             // Write like this: bw.write("asd");
             for(Map.Entry<String,Word> entry: Words.entrySet()){
-                // Check if we exced the memory threshold
-                byte[] lineBytes = line.getBytes();
-                currentMemory += lineBytes.length;
-                if(currentMemory > MEM_THRESHOLD){
-                    bw.close();
-                    createPostingFile(vocabularyFile,folder,index);
-
-                    currentMemory = 0;
-                    index++;
-
-                    vocabularyFile = new File(folder, "VocabularyFile" + index + ".txt");
-                    VocabQueue.add(vocabularyFile.getAbsolutePath());
-                    writer = new FileWriter(vocabularyFile, true);
-                    bw = new BufferedWriter(writer);
-
-                    postingPointer = 0;
-                    line = entry.getKey() + "\t"+ entry.getValue().getdF()+"\t" + postingPointer + "\n";
-                    bw.write(line);
-                    postingPointer += generatePointer(entry.getValue());
-
-                }else{
-                    line = entry.getKey() + "\t"+ entry.getValue().getdF()+"\t" + postingPointer + "\n";
-                    bw.write(line);
-                    postingPointer += generatePointer(entry.getValue());
-                }
+                line = entry.getKey() + "\t"+ entry.getValue().getdF()+"\t" + postingPointer + "\n";
+                bw.write(line);
+                postingPointer += generatePointer(entry.getValue());
             }
-            createPostingFile(vocabularyFile,folder,index);
             bw.close();
+            createPostingFile(vocabularyFile,folder,index);
+
+
         } catch (IOException e) {
             System.out.println("An error occurred while creating the file: " + e.getMessage());
         }
 
-        File documentFile = new File(folder, "DocumentsFile.txt");
+        /*File documentFile = new File(folder, "DocumentsFile.txt");
         clearFile(documentFile);
 
         try {
@@ -171,18 +150,23 @@ public class Analysis {
             bw.close();
         } catch (IOException e) {
             System.out.println("An error occurred while creating the file: " + e.getMessage());
-        }
+        }*/
     }
 
     private  void listFilesForFolder(File folder) {
 
+
+        File CollectionIndex = new File("CollectionIndex");
+        deleteFolder(CollectionIndex);
+        CollectionIndex.mkdir();
+        int index = 0;
         for (File fileEntry : folder.listFiles()) {
             if (fileEntry.isDirectory()) {
                 listFilesForFolder(fileEntry);
             } else {
                 try {
                     File file = new File(fileEntry.getAbsolutePath());
-                    System.out.println(file);
+                    // System.out.println(file);
                     NXMLFileReader xmlFile = new NXMLFileReader(file);
                     String pmcid = xmlFile.getPMCID();
                     String title = xmlFile.getTitle();
@@ -193,30 +177,80 @@ public class Analysis {
                     ArrayList<String> authors = xmlFile.getAuthors();
                     HashSet<String> categories =xmlFile.getCategories();
 
-                    System.out.println("- PMC ID: " + pmcid);
-                    System.out.println("- Title: " + title);
-                    System.out.println("- Abstract: " + abstr);
-                    System.out.println("- Body: " + body);
-                    System.out.println("- Journal: " + journal);
-                    System.out.println("- Publisher: " + publisher);
-                    System.out.println("- Authors: " + authors);
-                    System.out.println("- Categories: " + categories);
+//                    System.out.println("- PMC ID: " + pmcid);
+//                    System.out.println("- Title: " + title);
+//                    System.out.println("- Abstract: " + abstr);
+//                    System.out.println("- Body: " + body);
+//                    System.out.println("- Journal: " + journal);
+//                    System.out.println("- Publisher: " + publisher);
+//                    System.out.println("- Authors: " + authors);
+//                    System.out.println("- Categories: " + categories);
+
 
                     Article article = new Article(Integer.parseInt(pmcid), title, abstr, body, journal, publisher, authors, categories, fileEntry.getAbsolutePath());
                     articles.add(article);
+
+                    generate(article);
+                    System.out.println("Current mem usage " + getCurrentMemory());
+                    //checkaroume to current mem > threshold
+                    if(getCurrentMemory() > MEM_THRESHOLD) {
+                        //grapsoume vocabFile kai Posting File
+                        createCollectionIndex(CollectionIndex, index);
+                        index++;
+                        Words.clear();
+                        System.out.println("Current mem usage " + getCurrentMemory());
+                    }
+                    //createCollectionIndex();
+                    // vocabFile
+                    // go to next articlec
+
+                    // mem > threshold
+                    // new vocabFile
+                    // create Posdting
                 } catch (Exception e){
                     e.printStackTrace();
                 }
 
             }
         }
-        generate();
 
+        Merge(CollectionIndex);
     } // listFilesForFolder
 
-    private void generate(){
+    private int getCurrentMemory(){
+        int mem = 0;
+        for(Word word : Words.values()){
+            // value bytes
+            mem += word.getValue().getBytes().length;
+            // df bytes
+            mem += 4;
+            // Map overhead
+            mem += word.getTagFrequency().size() *32 + word.getTermFrequecy().size() *32;
+            for(Map.Entry<Integer, Map<String, ArrayList<Integer>>> entry : word.getTagFrequency().entrySet()){
+                // Map  overhead
+                mem += entry.getValue().size() * 32;
+                // Ineger bytes
+                mem += 4;
+                for (Map.Entry<String, ArrayList<Integer>> innerEntry : entry.getValue().entrySet()) {
+                    // Inner String
+                    mem += innerEntry.getKey().getBytes().length;
+                    //Array List overhead
+                    mem += 24;
+                    mem += innerEntry.getValue().size() * 4;
+                }
+            }
+            // 2 Integers and 24 ArrayList overhead
+            mem += word.getTermFrequecy().size() * 8 + 24;
+        }
+        return mem;
+    }
 
-        for(Article article: articles){
+    /**
+     * Creates for every article its vocabulary, adds words to the global vocabulary
+     */
+    private void generate(Article article){
+
+
             article.tokenize(StopWords);
             int MaxFreq = 0;
             String maxFreqTerm = "";
@@ -253,18 +287,15 @@ public class Analysis {
             article.setMaxFrequency(MaxFreq);
             article.setMaxFrequencyTerm(maxFreqTerm);
 
-        }
+
         for(Map.Entry<String,Word> entry: Words.entrySet()) {
             int dF = entry.getValue().getTagFrequency().size();
             entry.getValue().setdF(dF);
-            entry.getValue().setTdIDFweight(articles);
-            //System.out.println(entry.getValue().getValue()+"------" + entry.getValue().getTdIDFweight());
-        }
-        for(Article article: articles){
-            // System.out.println(article.pmcId+"\t"+article.getMaxFrequency() + " \t" + article.getMaxFrequencyTerm());
+            //entry.getValue().setTdIDFweight(articles);
+            // System.out.println(entry.getValue().getValue()+"------" + entry.getValue().getTagFrequency() +
+            //        "------" + entry.getValue().getdF() + "------" + entry.getValue().getTermFrequecy());
         }
 
-        createCollectionIndex();
     }
 
     private ArrayList<Article> getArticles() {
@@ -341,13 +372,115 @@ public class Analysis {
         return vocabulary;
     }
 
-    private void Merge(){
+    private void Merge(File folder) {
         System.out.println("Merging...");
+        int index = 0;
         while(!VocabQueue.isEmpty()){
             if(VocabQueue.size() == 1){
-                System.out.println("Merging:" + VocabQueue.remove());
+                String path1 = VocabQueue.remove();
+                System.out.println("Merging:" + path1);
             }else{
-                System.out.println("Merging:" + VocabQueue.remove() + "\t" +VocabQueue.remove() );
+                String voc_path1 = VocabQueue.remove();
+                String voc_path2 = VocabQueue.remove();
+                String post_path1 = PostingQueue.remove();
+                String post_path2 = PostingQueue.remove();
+                File vocabFile = new File(folder, "VocabularyMerged"+index+".txt");
+                File postingFile = new File(folder, "PostingMerged"+index+".txt");
+
+
+                try {
+
+                    RandomAccessFile postFile1 = new RandomAccessFile(new File(post_path1),"r");
+                    RandomAccessFile postFile2 = new RandomAccessFile(new File(post_path2),"r");
+                    long postingPointer = 0;
+                    BufferedReader reader1 = new BufferedReader(new FileReader(voc_path1));
+                    BufferedReader reader2 = new BufferedReader(new FileReader(voc_path2));
+                    String line1, line2,line3,line4;
+                    String[] tokens1 = new String[3];
+                    String[] tokens2 = new String[3];
+
+                    String[] tokens3 = new String[3];
+                    String[] tokens4 = new String[3];
+                    BufferedWriter vocabWriter = new BufferedWriter(new FileWriter(vocabFile, true));
+                    BufferedWriter postWriter = new BufferedWriter(new FileWriter(postingFile, true));
+
+                    line1 = reader1.readLine();
+                    line2 = reader2.readLine();
+                    int equal_counter = 0;
+                    while(line1 != null && line2 != null){
+                        reader1.mark(4096);
+                        line3 = reader1.readLine();
+                        reader1.reset();
+                        reader2.mark(4096);
+                        line4= reader2.readLine();
+                        reader2.reset();
+
+                        tokens1 = line1.split("\t");
+                        tokens2 = line2.split("\t");
+                        if(line3 != null) {
+                            tokens3 = line3.split("\t");
+                        }
+                        if (line4 != null) {
+                            tokens4 = line4.split("\t");
+                        }
+
+                        // Writes word of tokens1[]
+                        if(tokens2[0].compareTo(tokens1[0]) > 0){
+
+                            vocabWriter.write(tokens1[0] + "\t" + tokens1[1] + "\t" + postingPointer+ "\n");
+
+                            long pointer = Integer.parseInt(tokens3[2]) - Integer.parseInt(tokens1[2]); // HOW MANY TO READ FROM POSTING FILE
+                            postFile1.seek(Integer.parseInt(tokens1[2]));
+                            byte[] buf = new byte[(int) pointer];
+                            postFile1.readFully(buf);
+                            String s = new String(buf, "UTF-8");
+                            postingPointer += pointer;
+                            postWriter.write(s);
+                            line1 = reader1.readLine();
+                        }
+                        else if(tokens2[0].compareTo(tokens1[0]) < 0){
+                            vocabWriter.write(tokens2[0] + "\t" + tokens1[1] + "\t" +postingPointer+ "\n");
+                            long pointer = Integer.parseInt(tokens4[2]) - Integer.parseInt(tokens2[2]);
+                            postFile2.seek(Integer.parseInt(tokens2[2]));
+                            byte[] buf = new byte[(int) pointer];
+                            postFile2.readFully(buf);
+                            String s = new String(buf, "UTF-8");
+                            postingPointer += pointer;
+                            postWriter.write(s);
+                            line2 = reader2.readLine();
+                        } else {
+                            equal_counter++;
+                            int newDf = Integer.parseInt(tokens1[1]) + Integer.parseInt(tokens2[1]);
+                            vocabWriter.write(tokens2[0] + "\t" + newDf + "\t" +postingPointer+ "\n");
+
+
+                            long pointer1 = Integer.parseInt(tokens3[2]) - Integer.parseInt(tokens1[2]);
+                            long pointer2 = Integer.parseInt(tokens4[2]) - Integer.parseInt(tokens2[2]);
+
+                            byte[] buf1 = new byte[(int) pointer1];
+                            byte[] buf2 = new byte[(int) pointer2];
+                            postFile1.readFully(buf1);
+                            postFile2.readFully(buf2);
+                            String s1 = new String(buf1, "UTF-8");
+                            String s2 = new String(buf2, "UTF-8");
+                            postingPointer += pointer1+pointer2;
+                            postWriter.write(s1);
+                            postWriter.write(s2);
+                            line1 = reader1.readLine();
+                            line2 = reader2.readLine();
+                           // line1 = line3;
+                           // line2 = line4;
+                        }
+
+                    }
+                    System.out.println(equal_counter);
+                    vocabWriter.close();
+
+                }catch(IOException e){
+
+                }
+
+                System.out.println("Merging:" + voc_path1 + "\t" +voc_path2 );
             }
 
         }
