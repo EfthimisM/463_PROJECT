@@ -40,7 +40,7 @@ public class Article {
 
     // Function that removes punctuation and removes stop words
     public static String tokenize(String word, List<String> tokens) {
-        char[] punctuation = {'.', ',', '?', '!', ';', ':', '\'', '\"', ')', ']', '}', '(', '[', '{', '<', '>', '/', '\\', '-', '=', '+', '*'};
+        char[] punctuation = {'.', ',', '?', '!', ';', ':', '\'', '\"', ')', ']', '}', '(', '[', '{', '<', '>', '/', '\\', '-', '=', '+', '*', '~'};
         if (tokens.contains(word)) {
             return "A";
         }

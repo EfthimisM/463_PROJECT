@@ -25,7 +25,7 @@ public class Word {
      * Integer(first parameter) : document ID.
      * Integer(second parameter) : frequency on this file.
      */
-    private Map<Integer, Integer> TermFrequecy = new HashMap<>();
+    private Map<Integer, Double> TermFrequecy = new HashMap<>();
     /**
      * Integer : document ID
      * ArrayList of Integers : position where the term is found in the document in each tag
@@ -45,7 +45,7 @@ public class Word {
         return TagFrequency;
     }
 
-    public Map<Integer, Integer> getTermFrequecy() {
+    public Map<Integer, Double> getTermFrequecy() {
         return TermFrequecy;
     }
 
@@ -65,7 +65,7 @@ public class Word {
         TagFrequency.putAll(tagFrequency);
     }
 
-    public void setTermFrequecy(Map<Integer, Integer> termFrequecy) {
+    public void setTermFrequecy(Map<Integer, Double> termFrequecy) {
         TermFrequecy.putAll(termFrequecy);
     }
 
