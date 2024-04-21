@@ -15,7 +15,7 @@ public class Analysis {
     private Map<String,Word> Words = new TreeMap<>();
     private List<String> StopWords;
     // 4 kBytes
-    private static final int MEM_THRESHOLD = 512 * 512 ;
+    private static final int MEM_THRESHOLD = 1024 * 1024 * 4 ;
     // Partial vocab Files queue
     private static final Queue<String> VocabQueue = new ArrayDeque<>();
     // Partial Posting Files queue
@@ -76,7 +76,10 @@ public class Analysis {
             Integer id = entry.getKey();
             Double termFreq = word.getTermFrequecy().get(id); // has error here
             //writePost.write(id +"\t" + termFreq + "\t" + tagFrequency + "\n");
-            str +=  id + "\t" + String.format("%8f",termFreq) + "\t";
+            if(termFreq == null){
+                termFreq = 0.0;
+            }
+            str +=  id + "\t" + termFreq + "\t";
             for (Map.Entry<String, ArrayList<Integer>> entry1 : entry.getValue().entrySet()) {
                 str += entry1.getKey() + "\t";
                 for (Integer freq : entry1.getValue()) {
@@ -104,7 +107,7 @@ public class Analysis {
 
                 Word term = this.Words.get(word);
                 if(term == null){
-                    System.out.println("EIMASTE: "+ word);
+                    System.out.println("EIMASTE: "+ word + "\t" +file.getAbsolutePath());
                 }else{
                     String str = createPostingString(term);
                     writePost.write(str);
@@ -130,12 +133,18 @@ public class Analysis {
 
         File vocabularyFile = new File(folder, "VocabularyFile"+index+".txt");
         VocabQueue.add(vocabularyFile.getAbsolutePath());   // Merging
+
         try {
             FileWriter writer = new FileWriter(vocabularyFile, true);
             BufferedWriter bw = new BufferedWriter(writer);
+
             String line = "";
             // Write like this: bw.write("asd");
             for(Map.Entry<String,Word> entry: Words.entrySet()){
+                if(postingPointer < 0 ){
+                    System.out.println("POINTER 0 PROBLEM " + postingPointer);
+                }
+
                 line = entry.getKey() + "\t"+ entry.getValue().getdF()+"\t" + postingPointer + "\n";
                 bw.write(line);
                 postingPointer += generatePointer(entry.getValue());
@@ -147,29 +156,6 @@ public class Analysis {
         } catch (IOException e) {
             System.out.println("An error occurred while creating the file: " + e.getMessage());
         }
-
-        /*File documentFile = new File(folder, "DocumentsFile.txt");
-        clearFile(documentFile);
-
-        try {
-            FileWriter writer = new FileWriter(documentFile, true);
-            BufferedWriter bw = new BufferedWriter(writer);
-            // Write like this: bw.write("asd");
-            for(Article article: articles){
-                bw.write(article.pmcId + "\t"+ article.path+ "\n");
-                double norm = 0;
-                for(Map.Entry<String,Word> entry: Words.entrySet()){
-                    if(entry.getValue().getTdIDFweight().containsKey(article.pmcId)){
-                        norm += entry.getValue().getTdIDFweight().get(article.pmcId)* entry.getValue().getTdIDFweight().get(article.pmcId);
-                    }
-                }
-                norm = sqrt(norm);
-                bw.write(norm + "\n");
-            }
-            bw.close();
-        } catch (IOException e) {
-            System.out.println("An error occurred while creating the file: " + e.getMessage());
-        }*/
     }
 
     private  void listFilesForFolder(File folder) {
@@ -604,6 +590,9 @@ public class Analysis {
                                 pointer1 = Integer.parseInt(tokens3[2]) - Integer.parseInt(tokens1[2]);
                                 pointer2 = Integer.parseInt(tokens4[2]) - Integer.parseInt(tokens2[2]);
                             }
+                            if(pointer1<0 || pointer2<0){
+                                System.out.print(tokens3[0] + "\t"+ tokens4[0]+"  MPHKEEEEEEEEEEEEEEEEEEEEE");
+                            }
                             byte[] buf1 = new byte[(int) pointer1];
                             byte[] buf2 = new byte[(int) pointer2];
                             postFile1.readFully(buf1);
@@ -688,7 +677,6 @@ public class Analysis {
                         }
                     }
 
-                    System.out.println(equal_counter);
                     vocabWriter.close();
                     postWriter.close();
                     System.out.println("Merging:" + voc_path1 + "\t" +voc_path2 );
