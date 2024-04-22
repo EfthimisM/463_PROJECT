@@ -12,6 +12,7 @@ public class Analysis {
 
     private Map<String, Integer> articles = new HashMap<>();
 
+    private int depth = 0;
     private Map<String,Word> Words = new TreeMap<>();
     private List<String> StopWords;
     // 4 kBytes
@@ -93,7 +94,7 @@ public class Analysis {
     }
 
     private void createPostingFile(File file,File folder,int index){
-        File postingFile = new File(folder, "PostingFile" + index + ".txt");
+        File postingFile = new File(folder, "PostingFile" +depth+"_"+ index + ".txt");
         //add to a different queue
         PostingQueue.add(postingFile.getAbsolutePath());
         try{
@@ -131,7 +132,7 @@ public class Analysis {
         System.out.println("Indexing...");
         long postingPointer = 0;
 
-        File vocabularyFile = new File(folder, "VocabularyFile"+index+".txt");
+        File vocabularyFile = new File(folder, "VocabularyFile"+depth+"_"+index+".txt");
         VocabQueue.add(vocabularyFile.getAbsolutePath());   // Merging
 
         try {
@@ -168,6 +169,7 @@ public class Analysis {
         for (File fileEntry : folder.listFiles()) {
             if (fileEntry.isDirectory()) {
                 listFilesForFolder(fileEntry);
+                depth ++;
             } else {
                 try {
                     File file = new File(fileEntry.getAbsolutePath());
@@ -224,7 +226,6 @@ public class Analysis {
             createCollectionIndex(CollectionIndex, index);
             index++;
             Words.clear();
-
         }
 
         Merge(CollectionIndex, 0);
@@ -264,51 +265,51 @@ public class Analysis {
     private void generate(Article article){
 
 
-            article.tokenize(StopWords);
-            int MaxFreq = 0;
-            String maxFreqTerm = "";
+        article.tokenize(StopWords);
+        int MaxFreq = 0;
+        String maxFreqTerm = "";
 
-            Map<String,Map<String,ArrayList<Integer>>> test = createVocabulary(article);
-            article.setVocabulary(test);
+        Map<String,Map<String,ArrayList<Integer>>> test = createVocabulary(article);
+        article.setVocabulary(test);
 
-            // Find the max frequency
-            for(String w : test.keySet()){
-                Map<String,ArrayList<Integer>> freqArticle = test.get(w);
+        // Find the max frequency
+        for(String w : test.keySet()){
+            Map<String,ArrayList<Integer>> freqArticle = test.get(w);
 
-                int sum = 0;
-                for (ArrayList<Integer> value: freqArticle.values()){
-                    sum += value.size();
-                }
-                if(sum > MaxFreq) {
-                    MaxFreq = sum;
-                    maxFreqTerm = w;
-                }
+            int sum = 0;
+            for (ArrayList<Integer> value: freqArticle.values()){
+                sum += value.size();
             }
-
-            for(String w : test.keySet()) {
-                // Set Tag Frequency
-                Map<Integer,Map<String,ArrayList<Integer>>> TagFrequency = new HashMap<>();
-                // Set Term Frequency
-                Map<Integer, Double> tf = new HashMap<>();
-
-                Word x;
-                if(!Words.containsKey(w)) {
-                    x = new Word(w);
-                    Words.put(w,x);
-                }
-                Map<String,ArrayList<Integer>> freqArticle = test.get(w);
-                x = Words.get(w);
-                TagFrequency.put(article.pmcId,freqArticle);
-                x.setTagFrequency(TagFrequency);
-                int sum = 0;
-                for (ArrayList<Integer> value: freqArticle.values()){
-                    sum += value.size();
-                }
-                tf.put(article.pmcId,(double) sum/ MaxFreq);
-                x.setTermFrequecy(tf);
+            if(sum > MaxFreq) {
+                MaxFreq = sum;
+                maxFreqTerm = w;
             }
-            article.setMaxFrequency(MaxFreq);
-            article.setMaxFrequencyTerm(maxFreqTerm);
+        }
+
+        for(String w : test.keySet()) {
+            // Set Tag Frequency
+            Map<Integer,Map<String,ArrayList<Integer>>> TagFrequency = new HashMap<>();
+            // Set Term Frequency
+            Map<Integer, Double> tf = new HashMap<>();
+
+            Word x;
+            if(!Words.containsKey(w)) {
+                x = new Word(w);
+                Words.put(w,x);
+            }
+            Map<String,ArrayList<Integer>> freqArticle = test.get(w);
+            x = Words.get(w);
+            TagFrequency.put(article.pmcId,freqArticle);
+            x.setTagFrequency(TagFrequency);
+            int sum = 0;
+            for (ArrayList<Integer> value: freqArticle.values()){
+                sum += value.size();
+            }
+            tf.put(article.pmcId,(double) sum/ MaxFreq);
+            x.setTermFrequecy(tf);
+        }
+        article.setMaxFrequency(MaxFreq);
+        article.setMaxFrequencyTerm(maxFreqTerm);
 
 
         for(Map.Entry<String,Word> entry: Words.entrySet()) {
@@ -505,10 +506,10 @@ public class Analysis {
                     int equal_counter = 0;
 
                     while(line1 != null && line2 != null){
-                        reader1.mark(4096);
+                        reader1.mark(8192);
                         line3 = reader1.readLine();
                         reader1.reset();
-                        reader2.mark(4096);
+                        reader2.mark(8192);
                         line4= reader2.readLine();
                         reader2.reset();
 
@@ -526,7 +527,7 @@ public class Analysis {
                         // Writes word of tokens1[]
                         if(tokens2[0].compareTo(tokens1[0]) > 0){
                             vocabWriter.write(tokens1[0] + "\t" + tokens1[1] + "\t" + postingPointer+ "\n");
-                            long pointer = Integer.parseInt(tokens3[2]) - Integer.parseInt(tokens1[2]); // HOW MANY TO READ FROM POSTING FILE
+                            long pointer = Math.abs(Integer.parseInt(tokens3[2]) - Integer.parseInt(tokens1[2])); // HOW MANY TO READ FROM POSTING FILE
                             if(pointer == 0) {
                                 pointer = posting1.length() - Integer.parseInt(tokens1[2]);
                                 postFile1.seek(Integer.parseInt(tokens1[2]));
@@ -548,7 +549,7 @@ public class Analysis {
                         }
                         else if(tokens2[0].compareTo(tokens1[0]) < 0){
                             vocabWriter.write(tokens2[0] + "\t" + tokens2[1] + "\t" +postingPointer+ "\n");
-                            long pointer = Integer.parseInt(tokens4[2]) - Integer.parseInt(tokens2[2]);
+                            long pointer = Math.abs(Integer.parseInt(tokens4[2]) - Integer.parseInt(tokens2[2]));
                             if(pointer == 0) {
                                 pointer = posting2.length() - Integer.parseInt(tokens2[2]);
                                 postFile2.seek(Integer.parseInt(tokens2[2]));
@@ -579,16 +580,16 @@ public class Analysis {
                                 pointer2 = posting2.length() - Integer.parseInt(tokens2[2]);
 
                             } else if (line4 == null) {
-                                pointer1 = Integer.parseInt(tokens3[2]) - Integer.parseInt(tokens1[2]);
-                                pointer2 =posting2.length() - Integer.parseInt(tokens2[2]);
+                                pointer1 = Math.abs(Integer.parseInt(tokens3[2]) - Integer.parseInt(tokens1[2]));
+                                pointer2 =  Math.abs(posting2.length() - Integer.parseInt(tokens2[2]));
 
                             } else if (line3 == null) {
-                                pointer1 = posting1.length() - Integer.parseInt(tokens1[2]);
-                                pointer2 = Integer.parseInt(tokens4[2]) - Integer.parseInt(tokens2[2]);
+                                pointer1 = Math.abs(posting1.length() - Integer.parseInt(tokens1[2]));
+                                pointer2 = Math.abs(Integer.parseInt(tokens4[2]) - Integer.parseInt(tokens2[2]));
 
                             } else {
-                                pointer1 = Integer.parseInt(tokens3[2]) - Integer.parseInt(tokens1[2]);
-                                pointer2 = Integer.parseInt(tokens4[2]) - Integer.parseInt(tokens2[2]);
+                                pointer1 = Math.abs(Integer.parseInt(tokens3[2]) - Integer.parseInt(tokens1[2]));
+                                pointer2 = Math.abs(Integer.parseInt(tokens4[2]) - Integer.parseInt(tokens2[2]));
                             }
                             if(pointer1<0 || pointer2<0){
                                 System.out.print(tokens3[0] + "\t"+ tokens4[0]+"  MPHKEEEEEEEEEEEEEEEEEEEEE");
@@ -610,37 +611,37 @@ public class Analysis {
                     }
 
                     if(line1 == null) {
-                       while(line2 != null) {
+                        while(line2 != null) {
 
-                           tokens2 = line2.split("\t");
-                           vocabWriter.write(tokens2[0] + "\t" + tokens2[1] + "\t" + postingPointer+ "\n");
-                           reader2.mark(4096);
-                           line4= reader2.readLine();
-                           reader2.reset();
-                           if (line4 != null) {
-                               tokens4 = line4.split("\t");
-                               long pointer = Integer.parseInt(tokens4[2]) - Integer.parseInt(tokens2[2]);
-                               postFile2.seek(Integer.parseInt(tokens2[2]));
-                               byte[] buf = new byte[(int) pointer];
-                               postFile2.readFully(buf);
-                               String s = new String(buf, "UTF-8");
-                               postingPointer += pointer;
-                               postWriter.write(s);
-                               line2 = reader2.readLine();
-                           } else {
-                               long pointer;
-                               pointer = posting2.length() - Integer.parseInt(tokens2[2]);
-                               postFile2.seek(Integer.parseInt(tokens2[2]));
-                               byte[] buf1 = new byte[(int) pointer];
-                               postFile2.readFully(buf1);
-                               String s = new String(buf1, "UTF-8");
-                               postingPointer += pointer;
-                               postWriter.write(s);
-                               line2 = reader2.readLine();
+                            tokens2 = line2.split("\t");
+                            vocabWriter.write(tokens2[0] + "\t" + tokens2[1] + "\t" + postingPointer+ "\n");
+                            reader2.mark(8192);
+                            line4= reader2.readLine();
+                            reader2.reset();
+                            if (line4 != null) {
+                                tokens4 = line4.split("\t");
+                                long pointer = Math.abs(Integer.parseInt(tokens4[2]) - Integer.parseInt(tokens2[2]));
+                                postFile2.seek(Integer.parseInt(tokens2[2]));
+                                byte[] buf = new byte[(int) pointer];
+                                postFile2.readFully(buf);
+                                String s = new String(buf, "UTF-8");
+                                postingPointer += pointer;
+                                postWriter.write(s);
+                                line2 = reader2.readLine();
+                            } else {
+                                long pointer;
+                                pointer = posting2.length() - Integer.parseInt(tokens2[2]);
+                                postFile2.seek(Integer.parseInt(tokens2[2]));
+                                byte[] buf1 = new byte[(int) pointer];
+                                postFile2.readFully(buf1);
+                                String s = new String(buf1, "UTF-8");
+                                postingPointer += pointer;
+                                postWriter.write(s);
+                                line2 = reader2.readLine();
 
-                           }
+                            }
 
-                       }
+                        }
 
 
 
@@ -654,8 +655,8 @@ public class Analysis {
                             reader1.reset();
                             if (line3 != null) {
                                 tokens3 = line3.split("\t");
-                                long pointer = Integer.parseInt(tokens3[2]) - Integer.parseInt(tokens1[2]);
-                                postFile1.seek(Integer.parseInt(tokens1[2]));
+                                long pointer = Math.abs(Long.parseLong(tokens3[2]) - Long.parseLong(tokens1[2]));
+                                postFile1.seek(Long.parseLong(tokens1[2]));
                                 byte[] buf = new byte[(int) pointer];
                                 postFile1.readFully(buf);
                                 String s = new String(buf, "UTF-8");
@@ -664,7 +665,7 @@ public class Analysis {
                                 line1 = reader1.readLine();
                             } else {
                                 long pointer;
-                                pointer = posting1.length() - Integer.parseInt(tokens1[2]);
+                                pointer = Math.abs(posting1.length() - Integer.parseInt(tokens1[2]));
                                 postFile1.seek(Integer.parseInt(tokens1[2]));
                                 byte[] buf1 = new byte[(int) pointer];
                                 postFile1.readFully(buf1);
@@ -701,4 +702,3 @@ public class Analysis {
         }
     }
 }
-
