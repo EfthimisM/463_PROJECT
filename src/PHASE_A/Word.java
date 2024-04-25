@@ -1,33 +1,52 @@
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by FernFlower decompiler)
-//
-
 package PHASE_A;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 public class Word {
-    private Map<String, Map<String, ArrayList<Integer>>> TagFrequency = new HashMap();
-    private String value;
-    private int dF;
-    private Map<String, Double> TermFrequecy = new HashMap();
-    private Map<String, Map<String, ArrayList<Integer>>> WordDocumentRank = new HashMap();
-    private Map<String, Double> TdIDFweight = new HashMap();
 
-    public Word(String word) {
+    /**
+     * Integer : Document ID
+     * String : tag
+     * Integer(inside of map) : frequency
+     */
+    private Map<String,Map<String,ArrayList<Integer>>> TagFrequency = new HashMap<>();
+    /**
+     * String : Word Value
+     */
+    private String value;
+    /**
+     * document frequency : Number of documents where the term is encountered
+     */
+    private int dF;
+    /**
+     * Integer(first parameter) : document ID.
+     * Integer(second parameter) : frequency on this file.
+     */
+    private Map<String, Double> TermFrequecy = new HashMap<>();
+    /**
+     * Integer : document ID
+     * ArrayList of Integers : position where the term is found in the document in each tag
+     */
+    private Map<String,Map <String ,ArrayList<Integer>>> WordDocumentRank = new HashMap<>();
+    /**
+     * Integer : document Id
+     * Double : Cosine similarity of the term in the given document
+     */
+    private Map<String, Double> TdIDFweight = new HashMap<>();
+
+    public Word(String word){
         this.value = word;
     }
 
     public Map<String, Map<String, ArrayList<Integer>>> getTagFrequency() {
-        return this.TagFrequency;
+        return TagFrequency;
     }
 
     public Map<String, Double> getTermFrequecy() {
-        return this.TermFrequecy;
+        return TermFrequecy;
     }
 
     public void setdF(int dF) {
@@ -35,48 +54,42 @@ public class Word {
     }
 
     public int getdF() {
-        return this.dF;
+        return dF;
     }
 
     public String getValue() {
-        return this.value;
+        return value;
     }
 
-    public void setTagFrequency(Map<String, Map<String, ArrayList<Integer>>> tagFrequency) {
-        this.TagFrequency.putAll(tagFrequency);
+    public void setTagFrequency( Map<String,Map<String,ArrayList<Integer>>> tagFrequency) {
+        TagFrequency.putAll(tagFrequency);
     }
 
     public void setTermFrequecy(Map<String, Double> termFrequecy) {
-        this.TermFrequecy.putAll(termFrequecy);
+        TermFrequecy.putAll(termFrequecy);
     }
 
     public Map<String, Double> getTdIDFweight() {
-        return this.TdIDFweight;
+        return TdIDFweight;
     }
 
-    public void setTdIDFweight(ArrayList<Article> articles) {
-        Iterator var2 = articles.iterator();
-
-        while(var2.hasNext()) {
-            Article article = (Article)var2.next();
-            if (this.TermFrequecy.containsKey(article.pmcId)) {
-                double tf = (Double)this.TermFrequecy.get(article.pmcId) / (double)article.getMaxFrequency();
-                double idf = Math.log((double)articles.size() / (double)this.dF) / Math.log(2.0);
-                if (((Map)this.TagFrequency.get(article.pmcId)).containsKey("Title")) {
+    public void setTdIDFweight(ArrayList<Article> articles){
+        for(Article article : articles){
+            if(TermFrequecy.containsKey(article.pmcId)){
+                double tf = (double) TermFrequecy.get(article.pmcId) / article.getMaxFrequency();
+                double idf = Math.log( articles.size()/ (double) dF) / Math.log(2);
+                if(this.TagFrequency.get(article.pmcId).containsKey("Title")){
                     tf *= 2.5;
                 }
-
-                if (((Map)this.TagFrequency.get(article.pmcId)).containsKey("Authors")) {
-                    tf *= 2.0;
+                if(this.TagFrequency.get(article.pmcId).containsKey("Authors")){
+                    tf *= 2;
                 }
-
-                if (((Map)this.TagFrequency.get(article.pmcId)).containsKey("Categories")) {
+                if(this.TagFrequency.get(article.pmcId).containsKey("Categories")){
                     tf *= 1.5;
                 }
-
-                this.TdIDFweight.put(article.pmcId, tf * idf);
+                TdIDFweight.put(article.pmcId, tf * idf);
             }
         }
-
     }
+
 }
