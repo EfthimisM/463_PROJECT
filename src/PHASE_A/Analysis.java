@@ -15,7 +15,7 @@ public class Analysis {
     private Map<String,Word> Words = new TreeMap<>();
     private List<String> StopWords;
     // 4 kBytes
-    private static final int MEM_THRESHOLD = 1024 * 1024 * 4 ;
+    private static final int MEM_THRESHOLD = 1024 * 1024 * 40 ;
     // Partial vocab Files queue
     private static final Queue<String> VocabQueue = new ArrayDeque<>();
     private static final Queue<String> VocabQueue2 = new ArrayDeque<>();
