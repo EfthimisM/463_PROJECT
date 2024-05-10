@@ -5,14 +5,33 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
 import mitos.stemmer.Stemmer;
 
 public class GUI {
 
-    private String[] query;
+    private List<String> query;
     private String type;
+    private List<String> StopWords = new ArrayList<>();
 
     public GUI(){
+
+        List<String> stp = new ArrayList<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader("StopWords"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] lineWords = line.split("\\s+"); // split line by whitespace
+                for (String word : lineWords) {
+                    stp.add(word);
+                }
+            }
+        }catch(IOException e) {
+            e.printStackTrace();
+        }
+        StopWords = stp;
 
         JFrame frame = new JFrame("Phase B GUI");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -32,9 +51,12 @@ public class GUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String[] tmp = textField1.getText().split("\\s+");
-                query = new String[tmp.length];
+                query = new ArrayList<>();
+
                 for(int i =0; i< tmp.length; i++){
-                    query[i] = Stemmer.Stem(tmp[i]);
+                    if(!tokenize(Stemmer.Stem(tmp[i]), StopWords).equals("A")){
+                        query.add(tokenize(Stemmer.Stem(tmp[i]), StopWords));
+                    }
                 }
                 for(String word: query){
                     System.out.println(word);
@@ -66,6 +88,24 @@ public class GUI {
 
         frame.getContentPane().add(topPanel, BorderLayout.NORTH);
         frame.setVisible(true);
+    }
+
+    // Function that removes punctuation and removes stop words
+    public static String tokenize(String word, List<String> tokens) {
+        char[] punctuation = {'.', ',', '?', '!', ';', ':', '\'', '\"', ')', ']', '}', '(', '[', '{', '<', '>', '/', '\\', '-', '=', '+', '*', '~', '\t','|','^','_','#','$','%','&','\n'};
+        if (tokens.contains(word)) {
+            return "A";
+        }
+        for (char p : punctuation) {
+            if (word.indexOf(p) != -1) {
+                String tmp = word.replace(Character.toString(p), "");
+                word = tokenize(tmp, tokens);
+            }
+        }
+        if(word.isEmpty()){
+            return "A";
+        }
+        return word;
     }
 
     private void search() throws FileNotFoundException {
@@ -108,6 +148,7 @@ public class GUI {
                 for(String term : query){
                     if(term.equals(tokens[0])){
                         int df = Integer.parseInt(tokens[1]);
+                        System.out.print(df + " ");
 
                     }
                 }
