@@ -418,6 +418,7 @@ public class Analysis {
         File documentsFile = new File(folder, "DocumentsFile.txt");
         try{
             BufferedWriter writer = new BufferedWriter(new FileWriter(documentsFile.getAbsolutePath(), false));
+            writer.write(articles.size() + "\n");
 
             BufferedReader reader = new BufferedReader(new FileReader(vocabularyFile.getAbsolutePath()));
             RandomAccessFile postingAccess = new RandomAccessFile(postingFile, "r");
