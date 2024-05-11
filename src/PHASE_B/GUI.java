@@ -5,8 +5,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import mitos.stemmer.Stemmer;
 
@@ -15,6 +16,7 @@ public class GUI {
     private List<String> query;
     private String type;
     private List<String> StopWords = new ArrayList<>();
+    private int N;
 
     public GUI(){
 
@@ -113,20 +115,29 @@ public class GUI {
         File vocab;
         File posting;
         File documents;
+        String vocabPath = "";
         BufferedReader readerVocab = null;
-        RandomAccessFile postings;
+        RandomAccessFile postings = null;
+
+        // pmcid : score = score gia kathe term apo to query gia to document
+        Map<String,Double> score = new HashMap<>();
 
         for (File fileEntry : CollectionIndex.listFiles()){
 
             if(fileEntry.getName().contains("Documents")){
                 System.out.println("Documents File: "+fileEntry.getName());
-                documents = new File(fileEntry.getAbsolutePath());
+                BufferedReader readDoc = new BufferedReader( new FileReader(fileEntry.getAbsolutePath()));
+                try{
+                    N = Integer.parseInt(readDoc.readLine());
+                }catch (IOException e){
+                    N = 0;
+                }
 
             }
 
             if(fileEntry.getName().contains("Vocabulary")){
                 System.out.println("Vocabulary File: "+fileEntry.getName());
-                vocab = new File(fileEntry.getAbsolutePath());
+                vocabPath = fileEntry.getAbsolutePath();
                 readerVocab = new BufferedReader( new FileReader(fileEntry.getAbsolutePath()));
 
             }
@@ -139,24 +150,69 @@ public class GUI {
         }
 
         try{
-            String line = readerVocab.readLine();
-            while(line != null){
 
-                String[] tokens = line.split("\t");
-                line = readerVocab.readLine();
+            for(String term : query){
+                System.out.println("test");
+                readerVocab = new BufferedReader( new FileReader(vocabPath));
+                String line = readerVocab.readLine();
+                while(line != null){
 
-                for(String term : query){
+                    String[] tokens = line.split("\t");
+                    long posting_pointer = 0;
                     if(term.equals(tokens[0])){
+                        // To find the pointer
+                        readerVocab.mark(4096);
+                        String line1 = readerVocab.readLine();
+                        readerVocab.reset();
+                        String[] tokens1 = new String[3];
+
+                        // watch for initialization of postingfile
+                        if (line1 != null) {
+                            tokens1 = line1.split("\t");
+                            posting_pointer = Math.abs(Long.parseLong(tokens1[2]) - Long.parseLong(tokens[2]));
+                            System.out.println("correct");
+                        } else {
+                            System.out.println("not correct");
+                            posting_pointer = postings.length() - Math.abs(Long.parseLong(tokens[2]));
+                        }
+
                         int df = Integer.parseInt(tokens[1]);
-                        System.out.print(df + " ");
+                        double idf = Math.log(N/ (double)df)/Math.log(2);
+                        postings.seek(Long.parseLong(tokens[2]));
+                        byte[] buf1 = new byte[(int) posting_pointer];
+                        postings.readFully(buf1);
+                        String s = new String(buf1, "UTF-8");
+                        String[] lines = s.split("\n");
+                        for(String l : lines){
+                            String[] tmp = l.split("\t");
+                            double tf = Double.parseDouble(tmp[1]);
+                            double tfIdf = tf * idf;
+                            String id = tmp[0];
+                            if(score.containsKey(id)){
+                                double prev = score.get(id);
+                                score.put(id, prev + tfIdf);
+                            }else{
+                                score.put(id,tfIdf);
+                            }
+
+                        }
 
                     }
+                    line = readerVocab.readLine();
                 }
-
             }
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
+//        score.entrySet().stream()
+//                .sorted(Map.Entry.<String,Double>comparingByValue().reversed())
+//                .collect(Collectors.toMap((oldValue,newValue) -> oldValue,Map.Entry::getValue)
+//                .forEach(entry -> System.out.println(entry.getKey() + ": " + entry.getValue()));
+
+
+        System.out.println(score);
     }
 }
+

@@ -99,7 +99,8 @@ public class Analysis {
             if(termFreq == null){
                 termFreq = 0.0;
             }
-            str +=  id + "\t" + String.format("%.4f",termFreq) + "\t";
+
+            str +=  id + "\t" + String.format("%.4f",termFreq) + "\t" ;
             for (Map.Entry<String, ArrayList<Integer>> entry1 : entry.getValue().entrySet()) {
                 str += entry1.getKey() + "\t";
                 for (Integer freq : entry1.getValue()) {
@@ -166,7 +167,7 @@ public class Analysis {
         VocabQueue.add(vocabularyFile.getAbsolutePath());   // Merging
 
         try {
-            FileWriter writer = new FileWriter(vocabularyFile, true);
+            FileWriter writer = new FileWriter(vocabularyFile, false);
             BufferedWriter bw = new BufferedWriter(writer);
 
             String line = "";
