@@ -16,11 +16,13 @@ public class GUI {
     private List<String> query;
     private String type;
     private List<String> StopWords = new ArrayList<>();
+    private String display = "";
     private int N;
 
     public GUI(){
 
         List<String> stp = new ArrayList<>();
+
 
         try (BufferedReader br = new BufferedReader(new FileReader("StopWords"))) {
             String line;
@@ -47,6 +49,12 @@ public class GUI {
         JLabel queryLabel = new JLabel("Query: ");
         JLabel typeLabel = new JLabel("Type: ");
 
+        // Create a text area for displaying text
+        JTextArea textArea = new JTextArea(10, 40);
+        textArea.setLineWrap(true);
+        textArea.setEditable(false);
+        textArea.setWrapStyleWord(true);
+
         // Create button
         JButton button = new JButton("Search");
         button.addActionListener(new ActionListener() {
@@ -65,8 +73,16 @@ public class GUI {
                 }
 
                 type = textField2.getText();
+
                 try {
                     search();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Update the text area with the result
+                            textArea.setText(display);
+                        }
+                    });
                 } catch (FileNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -88,7 +104,12 @@ public class GUI {
         topPanel.add(textFieldPanel, BorderLayout.CENTER);
         topPanel.add(separator, BorderLayout.SOUTH); // Add separator below the text fields
 
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+
+
         frame.getContentPane().add(topPanel, BorderLayout.NORTH);
+        frame.getContentPane().add(scrollPane, BorderLayout.CENTER);
         frame.setVisible(true);
     }
 
@@ -112,12 +133,12 @@ public class GUI {
 
     private void search() throws FileNotFoundException {
         File CollectionIndex = new File("CollectionIndex");
-        File vocab;
         File posting;
-        File documents;
         String vocabPath = "";
         BufferedReader readerVocab = null;
         RandomAccessFile postings = null;
+        List<String> documents = new ArrayList<>();
+        display = "";
 
         // pmcid : score = score gia kathe term apo to query gia to document
         Map<String,Double> score = new HashMap<>();
@@ -129,6 +150,11 @@ public class GUI {
                 BufferedReader readDoc = new BufferedReader( new FileReader(fileEntry.getAbsolutePath()));
                 try{
                     N = Integer.parseInt(readDoc.readLine());
+                    String line;
+                    while((line = readDoc.readLine()) != null){
+                        String[] tokens = line.split("\t");
+                        documents.add(tokens[0]);
+                    }
                 }catch (IOException e){
                     N = 0;
                 }
@@ -206,13 +232,46 @@ public class GUI {
             throw new RuntimeException(e);
         }
 
+        // Sort the scores Map
+        List<Map.Entry<String, Double>> entryList = new ArrayList<>(score.entrySet());
+        Collections.sort(entryList, new Comparator<Map.Entry<String, Double>>() {
+            @Override
+            public int compare(Map.Entry<String, Double> entry1, Map.Entry<String, Double> entry2) {
+                // Compare values of the entries in reverse order
+                return -Double.compare(entry1.getValue(), entry2.getValue());
+            }
+        });
+
+        Map<String, Double> sortedScores = new LinkedHashMap<>();
+        for (Map.Entry<String, Double> entry : entryList) {
+            sortedScores.put(entry.getKey(), entry.getValue());
+        }
+
 //        score.entrySet().stream()
 //                .sorted(Map.Entry.<String,Double>comparingByValue().reversed())
 //                .collect(Collectors.toMap((oldValue,newValue) -> oldValue,Map.Entry::getValue)
 //                .forEach(entry -> System.out.println(entry.getKey() + ": " + entry.getValue()));
 
 
-        System.out.println(score);
+        System.out.println(sortedScores);
+
+        // Create an output String with the top 10 Scores
+        int stop = 1;
+        for (Map.Entry<String, Double> entry : sortedScores.entrySet()) {
+           if(stop == 10){
+               break;
+           }
+           String docPath = entry.getKey();
+           for(String path : documents){
+               if(path.contains(entry.getKey())){
+                   docPath = path;
+               }
+           }
+           display += stop+"\t"+docPath + ":\n\t\t" + entry.getValue() +"\n\n";
+           stop ++;
+        }
+
+
     }
 }
 
