@@ -4,6 +4,8 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import gr.uoc.csd.hy463.NXMLFileReader;
 
 import static java.lang.Math.sqrt;
@@ -17,11 +19,13 @@ public class Analysis {
     // 4 kBytes
     private static final int MEM_THRESHOLD = 1024 * 1024 * 40 ;
     // Partial vocab Files queue
-    private static final Queue<String> VocabQueue = new ArrayDeque<>();
-    private static final Queue<String> VocabQueue2 = new ArrayDeque<>();
+    private static final ConcurrentLinkedQueue<String> VocabQueue = new ConcurrentLinkedQueue<>();
+    private static final ConcurrentLinkedQueue<String> VocabQueue2 =  new ConcurrentLinkedQueue<>();
     // Partial Posting Files queue
-    private static final Queue<String> PostingQueue = new ArrayDeque<>();
-    private static final Queue<String> PostingQueue2 = new ArrayDeque<>();
+    File CollectionIndex = new File("CollectionIndex");
+    private static final  ConcurrentLinkedQueue<String> PostingQueue =  new ConcurrentLinkedQueue<>();
+    private static final ConcurrentLinkedQueue<String> PostingQueue2 =  new ConcurrentLinkedQueue<>();
+    int index = 0;
 
     /**
      *
@@ -44,8 +48,70 @@ public class Analysis {
         }
         StopWords = stp;
         listFilesForFolder(folder);
+        File[] files = CollectionIndex.listFiles();
+
+        // in case file remain
+        if(files.length > 3) {
+            processFolder(CollectionIndex);
+        } else {
+            System.out.println("You are ok");
+        }
+
+    }
+    public static void processFolder(File folderPath) {
+        // Check if the provided folder path is a directory
+        if (!folderPath.isDirectory()) {
+            System.out.println("Invalid folder path!");
+            return;
+        }
+
+        // List all files in the directory
+        File[] files = folderPath.listFiles();
+        if (files == null) {
+            System.out.println("Failed to list files in the folder!");
+            return;
+        }
 
 
+        Arrays.sort(files, Comparator.comparing(File::getName).reversed());
+
+        String highestVocabularyMerged = null;
+        String highestPostingMerged = null;
+        String documentsFile = null;
+
+        // Iterate over each file in the folder
+        for (File file : files) {
+            if (file.isFile()) {
+                String fileName = file.getName();
+
+                if (fileName.startsWith("VocabularyMerged")) {
+                    if (highestVocabularyMerged == null || fileName.compareTo(highestVocabularyMerged) > 0) {
+                        highestVocabularyMerged = fileName;
+                    } else {
+                        System.out.println("Will clear file: "+fileName);
+                        clearFile(file);
+                    }
+                }
+                // Process files starting with "PostingMerged"
+                else if (fileName.startsWith("PostingMerged")) {
+                    if (highestPostingMerged == null || fileName.compareTo(highestPostingMerged) > 0) {
+                        highestPostingMerged = fileName;
+                    } else {
+                        System.out.println("Will clear file: "+fileName);
+                        clearFile(file);
+                    }
+                }
+                // Check for "DocumentsFile.txt"
+                else if (fileName.equals("DocumentsFile.txt")) {
+                    documentsFile = fileName;
+                }
+            }
+        }
+
+        // Print out the names of the highest files and the documents file
+        System.out.println("Highest VocabularyMerged file: " + highestVocabularyMerged);
+        System.out.println("Highest PostingMerged file: " + highestPostingMerged);
+        System.out.println("DocumentsFile: " + documentsFile);
     }
 
     /**
@@ -55,9 +121,11 @@ public class Analysis {
     private static void clearFile(File file) {
         if (file.exists()) {
             if (file.delete()) {
+                File file1 = file;
                 System.out.println("file deleted successfully: ");
             } else {
-                System.out.println("Failed to delete file: " );
+                System.out.println(file.getName());
+                System.out.println("Failed to delete file: "+file.getName()+"  "+ file.delete() );
             }
         } else {
             System.out.println("file does not exist: ");
@@ -99,8 +167,7 @@ public class Analysis {
             if(termFreq == null){
                 termFreq = 0.0;
             }
-
-            str +=  id + "\t" + String.format("%.4f",termFreq) + "\t" ;
+            str +=  id + "\t" + String.format("%.4f",termFreq) + "\t";
             for (Map.Entry<String, ArrayList<Integer>> entry1 : entry.getValue().entrySet()) {
                 str += entry1.getKey() + "\t";
                 for (Integer freq : entry1.getValue()) {
@@ -167,7 +234,7 @@ public class Analysis {
         VocabQueue.add(vocabularyFile.getAbsolutePath());   // Merging
 
         try {
-            FileWriter writer = new FileWriter(vocabularyFile, false);
+            FileWriter writer = new FileWriter(vocabularyFile, true);
             BufferedWriter bw = new BufferedWriter(writer);
 
             String line = "";
@@ -182,8 +249,8 @@ public class Analysis {
                 postingPointer += generatePointer(entry.getValue());
             }
             bw.close();
+            writer.close();
             createPostingFile(vocabularyFile,folder,index);
-
 
         } catch (IOException e) {
             System.out.println("An error occurred while creating the file: " + e.getMessage());
@@ -196,10 +263,8 @@ public class Analysis {
      *               Recursively checks for XML files, going into all nested folders.
      */
     private void listFilesForFolder(File folder) {
-        File CollectionIndex = new File("CollectionIndex");
         deleteFolder(CollectionIndex);
         CollectionIndex.mkdir();
-        int index = 0;
         for (File fileEntry : folder.listFiles()) {
             if (fileEntry.isDirectory()) {
                 listFilesForFolder(fileEntry);
@@ -223,7 +288,6 @@ public class Analysis {
 
                     // Check if current memory exceeds threshold
                     if (getCurrentMemory() > MEM_THRESHOLD) {
-                        // Write vocabFile and Posting File
                         createCollectionIndex(CollectionIndex, index++);
                         Words.clear();
                     }
@@ -233,14 +297,16 @@ public class Analysis {
             }
         }
 
-        // Write vocabFile and Posting File for remaining Words
-        if (!Words.isEmpty()) {
-            createCollectionIndex(CollectionIndex, index++);
-            Words.clear();
-        }
+            if (!Words.isEmpty()) {
+                createCollectionIndex(CollectionIndex, index++);
+                Words.clear();
+            }
 
         // Merge all collection indexes at the end
-        Merge(CollectionIndex, 0);
+
+        Merge(CollectionIndex, index);
+
+
     }
 
     /**
@@ -460,6 +526,7 @@ public class Analysis {
 
                 for(String str : linetokens){
                     String[] tmp = str.split("\t");
+
                     if(tmp.length>1){
                         double tf = Double.parseDouble(tmp[1]);
                         double idf = Math.log(articles.size()/ (double)Integer.parseInt(tokens[1]))/Math.log(2);
@@ -469,7 +536,7 @@ public class Analysis {
                         vectorNorms.put(pmcId,a);
 
                     }else{
-                        System.out.println("Error has occured for line: "+tmp);
+                        System.out.println("Error has occured for line: "+tmp[0]);
                     }
                 }
                 line = reader.readLine();
@@ -494,14 +561,14 @@ public class Analysis {
      */
     private void Merge(File folder,int index) {
         System.out.println("Merging...");
-        File[] files = folder.listFiles();
-        System.out.println(VocabQueue.size()+" queue size");
+        System.out.println(VocabQueue);
         if(VocabQueue.size() == 1 ) {
             String path1 = VocabQueue.remove();
             String path2 = PostingQueue.remove();
             VocabQueue2.add(path1);
             PostingQueue2.add(path2);
             createDocumentsFile(folder, new File(path2), new File(path1));
+
         } else if(VocabQueue.size() > 1){
 
             try {
@@ -534,7 +601,6 @@ public class Analysis {
 
                 line1 = reader1.readLine();
                 line2 = reader2.readLine();
-                int equal_counter = 0;
 
                 while (line1 != null && line2 != null) {
                     reader1.mark(4096);
@@ -600,7 +666,6 @@ public class Analysis {
                         line2 = reader2.readLine();
 
                     } else {
-                        equal_counter++;
                         int newDf = Integer.parseInt(tokens1[1]) + Integer.parseInt(tokens2[1]);
                         vocabWriter.write(tokens2[0] + "\t" + newDf + "\t" + postingPointer + "\n");
                         long pointer1;
@@ -706,21 +771,21 @@ public class Analysis {
                         }
                     }
                 }
-
                 vocabWriter.close();
                 postWriter.close();
-                System.out.println("Merging:" + voc_path1 + "\t" + voc_path2);
-                VocabQueue.add(vocabFile.getAbsolutePath());
-                PostingQueue.add(postingFile.getAbsolutePath());
-
                 reader1.close();
                 reader2.close();
                 postFile1.close();
                 postFile2.close();
+
                 clearFile(vocab1);
                 clearFile(vocab2);
                 clearFile(posting1);
                 clearFile(posting2);
+                System.out.println("Merging:" + voc_path1 + "\t" + voc_path2);
+                VocabQueue.add(vocabFile.getAbsolutePath());
+                PostingQueue.add(postingFile.getAbsolutePath());
+
                 int i = index + 1;
                 Merge(folder, i);
 
@@ -744,5 +809,4 @@ public class Analysis {
         }
 
     }
-
 }
