@@ -58,6 +58,13 @@ public class Analysis {
         }
 
     }
+
+    /**
+     *
+     * @param folderPath CollectionIndex
+     *   for IDE issues that previous files werent being deleted.
+     *
+     */
     public static void processFolder(File folderPath) {
         // Check if the provided folder path is a directory
         if (!folderPath.isDirectory()) {
@@ -297,10 +304,10 @@ public class Analysis {
             }
         }
 
-            if (!Words.isEmpty()) {
-                createCollectionIndex(CollectionIndex, index++);
-                Words.clear();
-            }
+        if (!Words.isEmpty()) {
+            createCollectionIndex(CollectionIndex, index++);
+            Words.clear();
+        }
 
         // Merge all collection indexes at the end
 

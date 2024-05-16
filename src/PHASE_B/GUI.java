@@ -247,12 +247,6 @@ public class GUI {
             sortedScores.put(entry.getKey(), entry.getValue());
         }
 
-//        score.entrySet().stream()
-//                .sorted(Map.Entry.<String,Double>comparingByValue().reversed())
-//                .collect(Collectors.toMap((oldValue,newValue) -> oldValue,Map.Entry::getValue)
-//                .forEach(entry -> System.out.println(entry.getKey() + ": " + entry.getValue()));
-
-
         System.out.println(sortedScores);
 
         // Create an output String with the top 10 Scores

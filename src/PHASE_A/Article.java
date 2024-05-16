@@ -70,7 +70,7 @@ public class Article {
         for(String word: words){
             rank ++;
             String tmp = tokenize(word, stopWords);
-            if(!tmp.endsWith("A")){
+            if(!tmp.endsWith("A") && tmp!= null){
                 titleTokenized.add(Stemmer.Stem(tmp));
             }
         }
@@ -79,7 +79,7 @@ public class Article {
         for(String word: words){
             rank ++;
             String tmp = tokenize(word, stopWords);
-            if(!tmp.endsWith("A")){
+            if(!tmp.endsWith("A") && tmp!= null){
                 abstrTokenized.add(Stemmer.Stem(tmp));
             }
         }
@@ -88,7 +88,7 @@ public class Article {
         for(String word: words){
             rank ++;
             String tmp = tokenize(word, stopWords);
-            if(!tmp.endsWith("A")){
+            if(!tmp.endsWith("A") && tmp!= null){
                 bodyTokenized.add(Stemmer.Stem(tmp));
             }
         }
@@ -97,7 +97,7 @@ public class Article {
         for(String word: words){
             rank ++;
             String tmp = tokenize(word, stopWords);
-            if(!tmp.endsWith("A")){
+            if(!tmp.endsWith("A") && tmp!= null){
                 journalTokenized.add(Stemmer.Stem(tmp));
             }
         }
@@ -106,7 +106,7 @@ public class Article {
         for(String word: words){
             rank ++;
             String tmp = tokenize(word, stopWords);
-            if(!tmp.endsWith("A")){
+            if(!tmp.endsWith("A")&& tmp!= null){
                 publisherTokenized.add(Stemmer.Stem(tmp));
             }
         }
