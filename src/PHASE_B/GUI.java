@@ -19,10 +19,10 @@ public class GUI {
     private String display = "";
     private int N;
 
-    public GUI(){
+    public GUI() throws Exception {
 
         List<String> stp = new ArrayList<>();
-
+        IRQualityEvaluator evaluator = new IRQualityEvaluator();
 
         try (BufferedReader br = new BufferedReader(new FileReader("StopWords"))) {
             String line;
