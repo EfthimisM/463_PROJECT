@@ -1,54 +1,55 @@
-53
-G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\0\1964547.nxml	9.85892699015146
-G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_5\2\2627179.nxml	9.065372129132443
-G:\hy463\MiniCollection\MiniCollection\treatment\Topic_28\1\3420498.nxml	7.005977738540158
-G:\hy463\MiniCollection\MiniCollection\test\Topic_14\0\2254469.nxml	4.144244908511069
-G:\hy463\MiniCollection\MiniCollection\test\Topic_14\1\2496697.nxml	6.38356032657256
-G:\hy463\MiniCollection\MiniCollection\test\Topic_17\2\3806164.nxml	7.345364184273713
-G:\hy463\MiniCollection\MiniCollection\test\Topic_17\1\2572586.nxml	8.586448908464302
-G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_5\2\2887806.nxml	8.44594439462349
-G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\2\3259311.nxml	4.798553150133535
-G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\2\3199072.nxml	6.409244106222487
-G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\2\3666422.nxml	4.9280537829079405
-G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\1\1853078.nxml	8.258282960483855
-G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\2\3078282.nxml	4.847584844073026
-G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\2\130966.nxml	3.0711059323033636
-G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\0\1942180.nxml	5.7671568124812245
-G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\2\3710774.nxml	6.729516566529699
-G:\hy463\MiniCollection\MiniCollection\treatment\Topic_28\0\3444845.nxml	6.682255717340801
-G:\hy463\MiniCollection\MiniCollection\test\Topic_14\1\2559826.nxml	8.140347319429647
-G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\1\2635122.nxml	5.870699331196319
-G:\hy463\MiniCollection\MiniCollection\test\Topic_14\2\2518380.nxml	7.521345551116072
-G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\1\2729419.nxml	10.470159528576628
-G:\hy463\MiniCollection\MiniCollection\test\Topic_14\0\2443793.nxml	5.694082428697619
-G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\0\1936313.nxml	6.585907280401094
-G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\2\2364167.nxml	7.790110837478609
-G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\0\2232040.nxml	4.207323226582526
-G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_5\1\2567096.nxml	8.166741792192674
-G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\1\2267791.nxml	4.71912113177844
-G:\hy463\MiniCollection\MiniCollection\treatment\Topic_28\0\3337801.nxml	6.712641334191023
-G:\hy463\MiniCollection\MiniCollection\test\Topic_14\0\1858696.nxml	6.417098636304896
-G:\hy463\MiniCollection\MiniCollection\test\Topic_14\2\2994656.nxml	5.372477751675697
-G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\0\3632172.nxml	2.8492615804904515
-G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\1\1891278.nxml	4.3772971977608846
-G:\hy463\MiniCollection\MiniCollection\test\Topic_14\0\1866702.nxml	6.538565738241749
-G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_5\0\2567289.nxml	7.39186784799661
-G:\hy463\MiniCollection\MiniCollection\treatment\Topic_28\2\3356124.nxml	8.152606033414463
-G:\hy463\MiniCollection\MiniCollection\test\Topic_14\1\2627525.nxml	9.416440131981064
-G:\hy463\MiniCollection\MiniCollection\test\Topic_17\0\2254639.nxml	8.125266579375563
-G:\hy463\MiniCollection\MiniCollection\test\Topic_17\2\2609891.nxml	7.666302675158999
-G:\hy463\MiniCollection\MiniCollection\test\Topic_14\2\3150839.nxml	7.037907205252762
-G:\hy463\MiniCollection\MiniCollection\test\Topic_17\0\2246105.nxml	5.8626883558408664
-G:\hy463\MiniCollection\MiniCollection\treatment\Topic_28\2\3368296.nxml	4.12795092503824
-G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\0\1852545.nxml	10.701970241024604
-G:\hy463\MiniCollection\MiniCollection\treatment\Topic_28\1\3461630.nxml	5.0035153158874675
-G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\1\1468413.nxml	9.35437668438185
-G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_5\0\2567299.nxml	9.639670528284606
-G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\0\3537269.nxml	2.8652038063450602
-G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_5\1\2244628.nxml	9.783788340616924
-G:\hy463\MiniCollection\MiniCollection\test\Topic_14\1\1794449.nxml	6.109882049093814
-G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\1\2737775.nxml	4.235249205243971
-G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\1\1976608.nxml	6.9811613850726415
-G:\hy463\MiniCollection\MiniCollection\test\Topic_17\1\3782364.nxml	3.6473251840591803
-G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\0\1994002.nxml	8.012425968079386
-G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\2\3661963.nxml	6.362163793359658
+54
+G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\0\1964547.nxml	treatment	9.914905368373086
+G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_5\2\2627179.nxml	diagnosis	9.092297416187511
+G:\hy463\MiniCollection\MiniCollection\treatment\Topic_28\1\3420498.nxml	treatment	6.8617847459741235
+G:\hy463\MiniCollection\MiniCollection\test\Topic_14\0\2254469.nxml	test	4.168799917487665
+G:\hy463\MiniCollection\MiniCollection\test\Topic_14\1\2496697.nxml	test	6.417630090305427
+G:\hy463\MiniCollection\MiniCollection\test\Topic_17\2\3806164.nxml	test	7.3842013955002415
+G:\hy463\MiniCollection\MiniCollection\test\Topic_17\1\2572586.nxml	test	8.629518650883488
+G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_5\2\2887806.nxml	diagnosis	8.496588834298349
+G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\2\3259311.nxml	diagnosis	4.815491501983423
+G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\2\3199072.nxml	diagnosis	6.439485871354981
+G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\2\3666422.nxml	treatment	4.948414608557635
+G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\1\1853078.nxml	treatment	8.304531804275248
+G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\2\3078282.nxml	diagnosis	4.88825083518836
+G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\2\130966.nxml	diagnosis	3.0910068234072066
+G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\0\1942180.nxml	diagnosis	5.819774473594063
+G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\2\3710774.nxml	treatment	6.775252351455212
+G:\hy463\MiniCollection\MiniCollection\treatment\Topic_28\0\3444845.nxml	treatment	6.696440920143887
+G:\hy463\MiniCollection\MiniCollection\test\Topic_14\1\2559826.nxml	test	8.159296718462342
+G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\1\2635122.nxml	diagnosis	5.903418759594351
+G:\hy463\MiniCollection\MiniCollection\test\Topic_14\2\2518380.nxml	test	7.4907107880128105
+G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\1\2729419.nxml	diagnosis	10.539792007723594
+G:\hy463\MiniCollection\MiniCollection\test\Topic_14\0\2443793.nxml	test	5.592156632970682
+G:\hy463\MiniCollection\MiniCollection\test\Topic_14\2\2828440.nxml	test	7.674153142931628
+G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\0\1936313.nxml	treatment	6.622080715224218
+G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\2\2364167.nxml	treatment	7.836324741428127
+G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\0\2232040.nxml	diagnosis	4.21304672526468
+G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_5\1\2567096.nxml	diagnosis	8.209584527249671
+G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\1\2267791.nxml	diagnosis	4.749147559459165
+G:\hy463\MiniCollection\MiniCollection\treatment\Topic_28\0\3337801.nxml	treatment	6.762986184290178
+G:\hy463\MiniCollection\MiniCollection\test\Topic_14\0\1858696.nxml	test	6.4291526210978995
+G:\hy463\MiniCollection\MiniCollection\test\Topic_14\2\2994656.nxml	test	5.314550075286905
+G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\0\3632172.nxml	treatment	2.87796700521954
+G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\1\1891278.nxml	treatment	4.404002140564553
+G:\hy463\MiniCollection\MiniCollection\test\Topic_14\0\1866702.nxml	test	6.570358958422237
+G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_5\0\2567289.nxml	diagnosis	7.428434615881801
+G:\hy463\MiniCollection\MiniCollection\treatment\Topic_28\2\3356124.nxml	treatment	8.195347332695059
+G:\hy463\MiniCollection\MiniCollection\test\Topic_14\1\2627525.nxml	test	9.470800509885786
+G:\hy463\MiniCollection\MiniCollection\test\Topic_17\0\2254639.nxml	test	8.168610198900737
+G:\hy463\MiniCollection\MiniCollection\test\Topic_17\2\2609891.nxml	test	7.720849317996243
+G:\hy463\MiniCollection\MiniCollection\test\Topic_14\2\3150839.nxml	test	7.072305686995518
+G:\hy463\MiniCollection\MiniCollection\test\Topic_17\0\2246105.nxml	test	5.883793761479867
+G:\hy463\MiniCollection\MiniCollection\treatment\Topic_28\2\3368296.nxml	treatment	4.152655942321509
+G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\0\1852545.nxml	diagnosis	10.753109330097814
+G:\hy463\MiniCollection\MiniCollection\treatment\Topic_28\1\3461630.nxml	treatment	5.041537243588576
+G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\1\1468413.nxml	treatment	9.405955480425353
+G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_5\0\2567299.nxml	diagnosis	9.679838457280127
+G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\0\3537269.nxml	treatment	2.89395197947466
+G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_5\1\2244628.nxml	diagnosis	9.830385337530362
+G:\hy463\MiniCollection\MiniCollection\test\Topic_14\1\1794449.nxml	test	6.103165069057729
+G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\1\2737775.nxml	diagnosis	4.265595816508501
+G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\1\1976608.nxml	treatment	7.02282643908199
+G:\hy463\MiniCollection\MiniCollection\test\Topic_17\1\3782364.nxml	test	3.6692192255941136
+G:\hy463\MiniCollection\MiniCollection\diagnosis\Topic_1\0\1994002.nxml	diagnosis	8.063304236836151
+G:\hy463\MiniCollection\MiniCollection\treatment\Topic_27\2\3661963.nxml	treatment	6.40986551481163

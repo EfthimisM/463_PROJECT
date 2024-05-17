@@ -7,27 +7,42 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import gr.uoc.csd.hy463.NXMLFileReader;
 import mitos.stemmer.Stemmer;
 
 public class GUI {
 
+    // Path : type
+    private Map<String, String> documentTypes;
+
+    private File CollectionIndex = new File("CollectionIndex");
+    private File posting;
+    private String vocabPath = "";
+    private BufferedReader readerVocab = null;
+    private RandomAccessFile postings = null;
+    private List<String> documents = new ArrayList<>();
     private List<String> query;
+
     private String type;
     private List<String> StopWords = new ArrayList<>();
     private String display = "";
     private int N;
 
+    /**
+     * GUI creates the whole Graphic Interface, and some of the stuff that need to be displayed.
+     * @throws Exception
+     */
     public GUI() throws Exception {
 
         List<String> stp = new ArrayList<>();
-        IRQualityEvaluator evaluator = new IRQualityEvaluator();
+        documentTypes = new HashMap<>();
+        Evaluator evaluator = new Evaluator();
 
         try (BufferedReader br = new BufferedReader(new FileReader("StopWords"))) {
             String line;
             while ((line = br.readLine()) != null) {
-                String[] lineWords = line.split("\\s+"); // split line by whitespace
+                String[] lineWords = line.split("\\s+"); // split line by space
                 for (String word : lineWords) {
                     stp.add(word);
                 }
@@ -36,6 +51,49 @@ public class GUI {
             e.printStackTrace();
         }
         StopWords = stp;
+
+
+        for (File fileEntry : CollectionIndex.listFiles()){
+
+            if(fileEntry.getName().contains("Documents")){
+                System.out.println("Documents File: "+fileEntry.getName());
+                BufferedReader readDoc = new BufferedReader( new FileReader(fileEntry.getAbsolutePath()));
+                try{
+                    N = Integer.parseInt(readDoc.readLine());
+                    String line;
+                    while((line = readDoc.readLine()) != null){
+
+                        String[] tokens = line.split("\t");
+                        documents.add(tokens[0]);
+
+                        int lastBackslashIndex = tokens[0].lastIndexOf('\\');
+                        String fileName = tokens[0].substring(lastBackslashIndex + 1);
+                        int lastDotIndex = fileName.lastIndexOf('.');
+                        String idNumber = fileName.substring(0, lastDotIndex);  // Extract ID: 2627179
+
+                        if(tokens.length == 3){documentTypes.put(idNumber, tokens[1]);}
+                        else{documentTypes.put(idNumber, "");}
+
+                    }
+                }catch (IOException e){
+                    N = 0;
+                }
+
+            }
+
+            if(fileEntry.getName().contains("Vocabulary")){
+                System.out.println("Vocabulary File: "+fileEntry.getName());
+                vocabPath = fileEntry.getAbsolutePath();
+                readerVocab = new BufferedReader( new FileReader(fileEntry.getAbsolutePath()));
+
+            }
+
+            if(fileEntry.getName().contains("Posting")){
+                System.out.println("Posting File: "+fileEntry.getName());
+                posting = new File(fileEntry.getAbsolutePath());
+                postings = new RandomAccessFile(posting, "r");
+            }
+        }
 
         JFrame frame = new JFrame("Phase B GUI");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -68,12 +126,7 @@ public class GUI {
                         query.add(tokenize(Stemmer.Stem(tmp[i]), StopWords));
                     }
                 }
-                for(String word: query){
-                    System.out.println(word);
-                }
-
                 type = textField2.getText();
-
                 try {
                     search();
                     SwingUtilities.invokeLater(new Runnable() {
@@ -84,6 +137,8 @@ public class GUI {
                         }
                     });
                 } catch (FileNotFoundException ex) {
+                    throw new RuntimeException(ex);
+                } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
             }
@@ -113,7 +168,12 @@ public class GUI {
         frame.setVisible(true);
     }
 
-    // Function that removes punctuation and removes stop words
+    /**
+     *
+     * @param word Word to be tokenized
+     * @param tokens Stopwords
+     * @return Returns the word altered, removed possible punctuations and stems it.
+     */
     public static String tokenize(String word, List<String> tokens) {
         char[] punctuation = {'.', ',', '?', '!', ';', ':', '\'', '\"', ')', ']', '}', '(', '[', '{', '<', '>', '/', '\\', '-', '=', '+', '*', '~', '\t','|','^','_','#','$','%','&','\n'};
         if (tokens.contains(word)) {
@@ -131,54 +191,18 @@ public class GUI {
         return word;
     }
 
-    private void search() throws FileNotFoundException {
-        File CollectionIndex = new File("CollectionIndex");
-        File posting;
-        String vocabPath = "";
-        BufferedReader readerVocab = null;
-        RandomAccessFile postings = null;
-        List<String> documents = new ArrayList<>();
+    /**
+     * Searches our vocabulary in order to find the query words,calculates the score via tf-idf and then displays them
+     * @throws FileNotFoundException
+     */
+    private void search() throws IOException {
         display = "";
-
         // pmcid : score = score gia kathe term apo to query gia to document
         Map<String,Double> score = new HashMap<>();
-
-        for (File fileEntry : CollectionIndex.listFiles()){
-
-            if(fileEntry.getName().contains("Documents")){
-                System.out.println("Documents File: "+fileEntry.getName());
-                BufferedReader readDoc = new BufferedReader( new FileReader(fileEntry.getAbsolutePath()));
-                try{
-                    N = Integer.parseInt(readDoc.readLine());
-                    String line;
-                    while((line = readDoc.readLine()) != null){
-                        String[] tokens = line.split("\t");
-                        documents.add(tokens[0]);
-                    }
-                }catch (IOException e){
-                    N = 0;
-                }
-
-            }
-
-            if(fileEntry.getName().contains("Vocabulary")){
-                System.out.println("Vocabulary File: "+fileEntry.getName());
-                vocabPath = fileEntry.getAbsolutePath();
-                readerVocab = new BufferedReader( new FileReader(fileEntry.getAbsolutePath()));
-
-            }
-
-            if(fileEntry.getName().contains("Posting")){
-                System.out.println("Posting File: "+fileEntry.getName());
-                posting = new File(fileEntry.getAbsolutePath());
-                postings = new RandomAccessFile(posting, "r");
-            }
-        }
 
         try{
 
             for(String term : query){
-                System.out.println("test");
                 readerVocab = new BufferedReader( new FileReader(vocabPath));
                 String line = readerVocab.readLine();
                 while(line != null){
@@ -196,9 +220,7 @@ public class GUI {
                         if (line1 != null) {
                             tokens1 = line1.split("\t");
                             posting_pointer = Math.abs(Long.parseLong(tokens1[2]) - Long.parseLong(tokens[2]));
-                            System.out.println("correct");
                         } else {
-                            System.out.println("not correct");
                             posting_pointer = postings.length() - Math.abs(Long.parseLong(tokens[2]));
                         }
 
@@ -214,13 +236,14 @@ public class GUI {
                             double tf = Double.parseDouble(tmp[1]);
                             double tfIdf = tf * idf;
                             String id = tmp[0];
-                            if(score.containsKey(id)){
-                                double prev = score.get(id);
-                                score.put(id, prev + tfIdf);
-                            }else{
-                                score.put(id,tfIdf);
+                            if(documentTypes.get(id).equals(type)){
+                                if(score.containsKey(id)){
+                                    double prev = score.get(id);
+                                    score.put(id, prev + tfIdf);
+                                }else{
+                                    score.put(id,tfIdf);
+                                }
                             }
-
                         }
 
                     }
@@ -232,12 +255,12 @@ public class GUI {
             throw new RuntimeException(e);
         }
 
-        // Sort the scores Map
+        // Sorting the scores Map
         List<Map.Entry<String, Double>> entryList = new ArrayList<>(score.entrySet());
         Collections.sort(entryList, new Comparator<Map.Entry<String, Double>>() {
             @Override
             public int compare(Map.Entry<String, Double> entry1, Map.Entry<String, Double> entry2) {
-                // Compare values of the entries in reverse order
+                // in reverse order
                 return -Double.compare(entry1.getValue(), entry2.getValue());
             }
         });
@@ -246,10 +269,6 @@ public class GUI {
         for (Map.Entry<String, Double> entry : entryList) {
             sortedScores.put(entry.getKey(), entry.getValue());
         }
-
-        System.out.println(sortedScores);
-
-        // Create an output String with the top 10 Scores
         int stop = 1;
         for (Map.Entry<String, Double> entry : sortedScores.entrySet()) {
            if(stop == 10){
@@ -261,10 +280,27 @@ public class GUI {
                    docPath = path;
                }
            }
-           display += stop+"\t"+docPath + ":\n\t\t" + entry.getValue() +"\n\n";
+           File file = new File(docPath);
+           NXMLFileReader xmlFile = new NXMLFileReader(file);
+           String body = xmlFile.getBody();
+           String[] sentences = body.split("(?<=[.])\\s*"); // regex to get sentences
+           String snippet = "";
+           int similarity = 0;
+           for(String sentence : sentences){
+               String[] tokens = sentence.split(" ");
+               int tmp = 0;
+               for(String token : tokens){
+                   if(query.contains(token)){
+                       tmp++;
+                   }
+               }
+               if(tmp > similarity){
+                   snippet = sentence;
+               }
+           }
+           display += stop+"\t"+docPath + ":\n\t" +snippet + "\n\t\tscore: " + entry.getValue() +"\n\n";
            stop ++;
         }
-
 
     }
 }

@@ -25,7 +25,7 @@ public class Article {
     private int maxFrequency;
     private String maxFrequencyTerm;
     String path;
-
+    static Stemmer stemmer;
     public Article(String id, String tt, String ab, String bod, String j, String pub, ArrayList<String> auth, HashSet<String> cat, String path){
         pmcId = id;
         title = tt;
@@ -57,7 +57,7 @@ public class Article {
     }
 
     public void tokenize(List<String> stopWords){
-
+        stemmer.Initialize();
         titleTokenized = new ArrayList<>();
         abstrTokenized = new ArrayList<>();
         bodyTokenized = new ArrayList<>();
@@ -70,8 +70,8 @@ public class Article {
         for(String word: words){
             rank ++;
             String tmp = tokenize(word, stopWords);
-            if(!tmp.endsWith("A") && tmp!= null){
-                titleTokenized.add(Stemmer.Stem(tmp));
+            if(!tmp.endsWith("A")){
+                titleTokenized.add(stemmer.Stem(tmp));
             }
         }
         //abs
@@ -79,8 +79,8 @@ public class Article {
         for(String word: words){
             rank ++;
             String tmp = tokenize(word, stopWords);
-            if(!tmp.endsWith("A") && tmp!= null){
-                abstrTokenized.add(Stemmer.Stem(tmp));
+            if(!tmp.endsWith("A")){
+                abstrTokenized.add(stemmer.Stem(tmp));
             }
         }
         //body
@@ -88,8 +88,8 @@ public class Article {
         for(String word: words){
             rank ++;
             String tmp = tokenize(word, stopWords);
-            if(!tmp.endsWith("A") && tmp!= null){
-                bodyTokenized.add(Stemmer.Stem(tmp));
+            if(!tmp.endsWith("A")){
+                bodyTokenized.add(stemmer.Stem(tmp));
             }
         }
 
@@ -97,8 +97,8 @@ public class Article {
         for(String word: words){
             rank ++;
             String tmp = tokenize(word, stopWords);
-            if(!tmp.endsWith("A") && tmp!= null){
-                journalTokenized.add(Stemmer.Stem(tmp));
+            if(!tmp.endsWith("A")){
+                journalTokenized.add(stemmer.Stem(tmp));
             }
         }
 
@@ -106,8 +106,8 @@ public class Article {
         for(String word: words){
             rank ++;
             String tmp = tokenize(word, stopWords);
-            if(!tmp.endsWith("A")&& tmp!= null){
-                publisherTokenized.add(Stemmer.Stem(tmp));
+            if(!tmp.endsWith("A")){
+                publisherTokenized.add(stemmer.Stem(tmp));
             }
         }
 

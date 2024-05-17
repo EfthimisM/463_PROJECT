@@ -66,13 +66,11 @@ public class Analysis {
      *
      */
     public static void processFolder(File folderPath) {
-        // Check if the provided folder path is a directory
         if (!folderPath.isDirectory()) {
             System.out.println("Invalid folder path!");
             return;
         }
 
-        // List all files in the directory
         File[] files = folderPath.listFiles();
         if (files == null) {
             System.out.println("Failed to list files in the folder!");
@@ -86,7 +84,7 @@ public class Analysis {
         String highestPostingMerged = null;
         String documentsFile = null;
 
-        // Iterate over each file in the folder
+
         for (File file : files) {
             if (file.isFile()) {
                 String fileName = file.getName();
@@ -99,7 +97,6 @@ public class Analysis {
                         clearFile(file);
                     }
                 }
-                // Process files starting with "PostingMerged"
                 else if (fileName.startsWith("PostingMerged")) {
                     if (highestPostingMerged == null || fileName.compareTo(highestPostingMerged) > 0) {
                         highestPostingMerged = fileName;
@@ -108,14 +105,12 @@ public class Analysis {
                         clearFile(file);
                     }
                 }
-                // Check for "DocumentsFile.txt"
                 else if (fileName.equals("DocumentsFile.txt")) {
                     documentsFile = fileName;
                 }
             }
         }
 
-        // Print out the names of the highest files and the documents file
         System.out.println("Highest VocabularyMerged file: " + highestVocabularyMerged);
         System.out.println("Highest PostingMerged file: " + highestPostingMerged);
         System.out.println("DocumentsFile: " + documentsFile);
@@ -233,6 +228,11 @@ public class Analysis {
         return bytes.length;
     }
 
+    /**
+     *
+     * @param folder Where the new files will be created
+     * @param index Used for the file name
+     */
     private void createCollectionIndex(File folder, int index){
         System.out.println("Indexing...");
         long postingPointer = 0;
@@ -312,8 +312,6 @@ public class Analysis {
         // Merge all collection indexes at the end
 
         Merge(CollectionIndex, index);
-
-
     }
 
     /**
@@ -551,8 +549,16 @@ public class Analysis {
 
             for(Map.Entry<String, String> entry : articles.entrySet()){
                 String path = entry.getKey();
+                String type = "";
+                if(path.contains("diagnosis")){
+                    type = "diagnosis";
+                }else if (path.contains("test")){
+                    type = "test";
+                } else if (path.contains("treatment")){
+                    type = "treatment";
+                }
                 Double norm = Math.sqrt(vectorNorms.get(entry.getValue()));
-                writer.write(path + "\t" + norm + "\n");
+                writer.write(path + "\t"+ type + "\t" + norm + "\n");
             }
             writer.close();
         }catch (IOException e){
