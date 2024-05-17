@@ -1,9 +1,3 @@
-### Στα πλαίσια αυτής της εργασίας μας ενδιαφέρουν οι παρακάτω 8 ετικέτες:
-* Αναγνωριστικό PMCID "pmc"
-* Τίτλος άρθρου 
-* Συγγραφείς του άρθρου
-* Περίληψη άρθρου
-* Κυρίως σώμα άρθρου
-* Κατηγορίες άρθρου
-* Περιοδικό που δημοσιεύτηκε
-* Εκδότης περιοδικού
+Xreiazeste ena orisma gia na to treksete, einai to path gia to mini collection
+
+Ean thelete na treksete to megalo collection 
