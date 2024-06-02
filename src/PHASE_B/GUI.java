@@ -8,6 +8,7 @@ import java.io.*;
 import java.util.*;
 import java.util.List;
 
+import PHASE_C.Evaluator;
 import gr.uoc.csd.hy463.NXMLFileReader;
 import mitos.stemmer.Stemmer;
 
@@ -22,22 +23,19 @@ public class GUI {
     private BufferedReader readerVocab = null;
     private RandomAccessFile postings = null;
     private List<String> documents = new ArrayList<>();
-    private List<String> query;
 
     private String type;
     private List<String> StopWords = new ArrayList<>();
-    private String display = "";
     private int N;
 
     /**
      * GUI creates the whole Graphic Interface, and some of the stuff that need to be displayed.
      * @throws Exception
      */
-    public GUI() throws Exception {
+    public GUI(boolean gui) throws Exception {
 
         List<String> stp = new ArrayList<>();
         documentTypes = new HashMap<>();
-        Evaluator evaluator = new Evaluator();
 
         try (BufferedReader br = new BufferedReader(new FileReader("StopWords"))) {
             String line;
@@ -119,6 +117,7 @@ public class GUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String[] tmp = textField1.getText().split("\\s+");
+                List<String> query;
                 query = new ArrayList<>();
 
                 for(int i =0; i< tmp.length; i++){
@@ -128,7 +127,7 @@ public class GUI {
                 }
                 type = textField2.getText();
                 try {
-                    search();
+                    String display = search(query);
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -165,7 +164,9 @@ public class GUI {
 
         frame.getContentPane().add(topPanel, BorderLayout.NORTH);
         frame.getContentPane().add(scrollPane, BorderLayout.CENTER);
-        frame.setVisible(true);
+        if(gui){
+            frame.setVisible(true);
+        }
     }
 
     /**
@@ -195,8 +196,8 @@ public class GUI {
      * Searches our vocabulary in order to find the query words,calculates the score via tf-idf and then displays them
      * @throws FileNotFoundException
      */
-    private void search() throws IOException {
-        display = "";
+    private String search(List<String> query ) throws IOException {
+        String display = "";
         // pmcid : score = score gia kathe term apo to query gia to document
         Map<String,Double> score = new HashMap<>();
 
@@ -302,6 +303,100 @@ public class GUI {
            stop ++;
         }
 
+        return display;
+    }
+
+    /**
+     * Use this for the 3rd phase to search internally
+     * @param query
+     * @return
+     * @throws IOException
+     */
+
+    public String ExternalSearch(List<String> query, int topicNum) throws IOException {
+        String display = "";
+        // pmcid : score = score gia kathe term apo to query gia to document
+        Map<String,Double> score = new HashMap<>();
+
+        try{
+
+            for(String term : query){
+                readerVocab = new BufferedReader( new FileReader(vocabPath));
+                String line = readerVocab.readLine();
+                while(line != null){
+
+                    String[] tokens = line.split("\t");
+                    long posting_pointer = 0;
+                    if(term.equals(tokens[0])){
+                        // To find the pointer
+                        readerVocab.mark(4096);
+                        String line1 = readerVocab.readLine();
+                        readerVocab.reset();
+                        String[] tokens1 = new String[3];
+
+                        // watch for initialization of postingfile
+                        if (line1 != null) {
+                            tokens1 = line1.split("\t");
+                            posting_pointer = Math.abs(Long.parseLong(tokens1[2]) - Long.parseLong(tokens[2]));
+                        } else {
+                            posting_pointer = postings.length() - Math.abs(Long.parseLong(tokens[2]));
+                        }
+
+                        int df = Integer.parseInt(tokens[1]);
+                        double idf = Math.log(N/ (double)df)/Math.log(2);
+                        postings.seek(Long.parseLong(tokens[2]));
+                        byte[] buf1 = new byte[(int) posting_pointer];
+                        postings.readFully(buf1);
+                        String s = new String(buf1, "UTF-8");
+                        String[] lines = s.split("\n");
+                        for(String l : lines){
+                            String[] tmp = l.split("\t");
+                            double tf = Double.parseDouble(tmp[1]);
+                            double tfIdf = tf * idf;
+                            String id = tmp[0];
+                            if(score.containsKey(id)){
+                                double prev = score.get(id);
+                                score.put(id, prev + tfIdf);
+                            }else{
+                                score.put(id,tfIdf);
+                            }
+
+                        }
+
+                    }
+                    line = readerVocab.readLine();
+                }
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Sorting the scores Map
+        List<Map.Entry<String, Double>> entryList = new ArrayList<>(score.entrySet());
+        Collections.sort(entryList, new Comparator<Map.Entry<String, Double>>() {
+            @Override
+            public int compare(Map.Entry<String, Double> entry1, Map.Entry<String, Double> entry2) {
+                // in reverse order
+                return -Double.compare(entry1.getValue(), entry2.getValue());
+            }
+        });
+
+        Map<String, Double> sortedScores = new LinkedHashMap<>();
+        for (Map.Entry<String, Double> entry : entryList) {
+            sortedScores.put(entry.getKey(), entry.getValue());
+        }
+        int rank = 1;
+        for (Map.Entry<String, Double> entry : sortedScores.entrySet()) {
+            if(rank == 1000){
+                break;
+            }
+            String docPath = entry.getKey();
+            display += topicNum + "\t" + "0" + "\t" + entry.getKey() + "\t" + rank + "\t" + entry.getValue() + "\n" ;
+            rank ++;
+        }
+
+        return display;
     }
 }
 

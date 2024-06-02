@@ -1,14 +1,11 @@
 package PHASE_A;
 
 import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import gr.uoc.csd.hy463.NXMLFileReader;
 
-import static java.lang.Math.sqrt;
 
 public class Analysis {
 
@@ -311,7 +308,7 @@ public class Analysis {
 
         // Merge all collection indexes at the end
 
-        Merge(CollectionIndex, index);
+        Merge(CollectionIndex, 0);
     }
 
     /**
@@ -702,8 +699,8 @@ public class Analysis {
                         if (pointer1 < 0 || pointer2 < 0) {
                             System.out.print(tokens3[0] + "\t" + tokens4[0] + "  Error here");
                         }
-                        byte[] buf1 = new byte[(int) pointer1];
-                        byte[] buf2 = new byte[(int) pointer2];
+                        byte[] buf1 = new byte[Math.abs((int) pointer1)];
+                        byte[] buf2 = new byte[Math.abs((int) pointer2)];
                         postFile1.readFully(buf1);
                         postFile2.readFully(buf2);
                         String s1 = new String(buf1, "UTF-8");
