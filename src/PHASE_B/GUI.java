@@ -32,7 +32,7 @@ public class GUI {
      * GUI creates the whole Graphic Interface, and some of the stuff that need to be displayed.
      * @throws Exception
      */
-    public GUI(boolean gui) throws Exception {
+    public GUI(boolean gui, boolean mini) throws Exception {
 
         List<String> stp = new ArrayList<>();
         documentTypes = new HashMap<>();
@@ -127,7 +127,7 @@ public class GUI {
                 }
                 type = textField2.getText();
                 try {
-                    String display = search(query);
+                    String display = search(query, mini);
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -196,7 +196,7 @@ public class GUI {
      * Searches our vocabulary in order to find the query words,calculates the score via tf-idf and then displays them
      * @throws FileNotFoundException
      */
-    private String search(List<String> query ) throws IOException {
+    private String search(List<String> query, boolean isMini ) throws IOException {
         String display = "";
         // pmcid : score = score gia kathe term apo to query gia to document
         Map<String,Double> score = new HashMap<>();
@@ -237,7 +237,16 @@ public class GUI {
                             double tf = Double.parseDouble(tmp[1]);
                             double tfIdf = tf * idf;
                             String id = tmp[0];
-                            if(documentTypes.get(id).equals(type)){
+                            if(isMini){
+                                if(documentTypes.get(id).equals(type)){
+                                    if(score.containsKey(id)){
+                                        double prev = score.get(id);
+                                        score.put(id, prev + tfIdf);
+                                    }else{
+                                        score.put(id,tfIdf);
+                                    }
+                                }
+                            }else{
                                 if(score.containsKey(id)){
                                     double prev = score.get(id);
                                     score.put(id, prev + tfIdf);
@@ -245,6 +254,8 @@ public class GUI {
                                     score.put(id,tfIdf);
                                 }
                             }
+
+
                         }
 
                     }
@@ -307,13 +318,15 @@ public class GUI {
     }
 
     /**
-     * Use this for the 3rd phase to search internally
-     * @param query
+     * Basically Search without GUI (for Phase C)
+     * @param query List of queries
+     * @param topicNum Number of topics
+     * @param midRelevantNum number of mid relevance files ( = 1 )
+     * @param highRelevantNumber number of high relevance files ( = 2 )
      * @return
      * @throws IOException
      */
-
-    public String ExternalSearch(List<String> query, int topicNum) throws IOException {
+    public String ExternalSearch(List<String> query, int topicNum, int midRelevantNum, int highRelevantNumber) throws IOException {
         String display = "";
         // pmcid : score = score gia kathe term apo to query gia to document
         Map<String,Double> score = new HashMap<>();
@@ -329,7 +342,7 @@ public class GUI {
                     long posting_pointer = 0;
                     if(term.equals(tokens[0])){
                         // To find the pointer
-                        readerVocab.mark(4096);
+                        readerVocab.mark(10000);
                         String line1 = readerVocab.readLine();
                         readerVocab.reset();
                         String[] tokens1 = new String[3];
@@ -387,12 +400,16 @@ public class GUI {
             sortedScores.put(entry.getKey(), entry.getValue());
         }
         int rank = 1;
+        int eval = 2;
         for (Map.Entry<String, Double> entry : sortedScores.entrySet()) {
-            if(rank == 1000){
+            if(rank == (midRelevantNum + highRelevantNumber)){
                 break;
             }
+            if(rank > highRelevantNumber){
+                eval = 1;
+            }
             String docPath = entry.getKey();
-            display += topicNum + "\t" + "0" + "\t" + entry.getKey() + "\t" + rank + "\t" + entry.getValue() + "\n" ;
+            display += topicNum + "\t" + "0" + "\t" + entry.getKey() + "\t" + rank + "\t" + entry.getValue() + "\t" + eval +"\n" ;
             rank ++;
         }
 

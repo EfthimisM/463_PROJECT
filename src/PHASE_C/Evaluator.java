@@ -6,8 +6,12 @@ import java.util.List;
 
 public class Evaluator {
 
-    List<Reader> topics;
+    public List<Reader> topics;
 
+    /**
+     * Goes through all the topics on topics.xml
+     * @throws Exception
+     */
     public Evaluator()  throws Exception{
         ArrayList<Topic> topics = TopicsReader.readTopics("topics.xml");
         this.topics = new ArrayList<>();

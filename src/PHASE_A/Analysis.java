@@ -3,6 +3,7 @@ package PHASE_A;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
 
 import gr.uoc.csd.hy463.NXMLFileReader;
 
@@ -14,12 +15,12 @@ public class Analysis {
     private Map<String,Word> Words = new TreeMap<>();
     private List<String> StopWords;
     // 4 kBytes
-    private static final int MEM_THRESHOLD = 1024 * 1024 * 40 ;
+    private static final int MEM_THRESHOLD = 1024 * 1024 *  10 ;
     // Partial vocab Files queue
     private static final ConcurrentLinkedQueue<String> VocabQueue = new ConcurrentLinkedQueue<>();
     private static final ConcurrentLinkedQueue<String> VocabQueue2 =  new ConcurrentLinkedQueue<>();
     // Partial Posting Files queue
-    File CollectionIndex = new File("CollectionIndex");
+    File CollectionIndex ;
     private static final  ConcurrentLinkedQueue<String> PostingQueue =  new ConcurrentLinkedQueue<>();
     private static final ConcurrentLinkedQueue<String> PostingQueue2 =  new ConcurrentLinkedQueue<>();
     int index = 0;
@@ -29,8 +30,11 @@ public class Analysis {
      * @param folder Folder of XML files
      * @param stopwords Words not to save
      */
-    public Analysis(File folder, File stopwords){
+    public Analysis(File folder, File stopwords, boolean isMini){
+        //deleteFolder(CollectionIndex);
         List<String> stp = new ArrayList<>();
+        CollectionIndex = new File("CollectionIndex");
+        CollectionIndex.mkdir();
 
         try (BufferedReader br = new BufferedReader(new FileReader(stopwords))){
             String line;
@@ -44,7 +48,7 @@ public class Analysis {
             e.printStackTrace();
         }
         StopWords = stp;
-        listFilesForFolder(folder);
+        listFilesForFolder(folder,isMini);
         File[] files = CollectionIndex.listFiles();
 
         // in case file remain
@@ -182,11 +186,10 @@ public class Analysis {
     /**
      *
      * @param file      Vocabulary File.
-     * @param folder    Folder on where we will be creating the Posting file.
      * @param index     Regarding the file name.
      */
-    private void createPostingFile(File file,File folder,int index){
-        File postingFile = new File(folder, "PostingFile" +depth+"_"+ index + ".txt");
+    private void createPostingFile(File file,int index){
+        File postingFile = new File(CollectionIndex, "PostingFile" +depth+"_"+ index + ".txt");
         //add to a different queue
         PostingQueue.add(postingFile.getAbsolutePath());
         try{
@@ -234,27 +237,25 @@ public class Analysis {
         System.out.println("Indexing...");
         long postingPointer = 0;
 
-        File vocabularyFile = new File(folder, "VocabularyFile"+depth+"_"+index+".txt");
+        File vocabularyFile = new File(CollectionIndex, "VocabularyFile"+depth+"_"+index+".txt");
         VocabQueue.add(vocabularyFile.getAbsolutePath());   // Merging
 
         try {
             FileWriter writer = new FileWriter(vocabularyFile, true);
             BufferedWriter bw = new BufferedWriter(writer);
-
             String line = "";
             // Write like this: bw.write("asd");
             for(Map.Entry<String,Word> entry: Words.entrySet()){
                 if(postingPointer < 0 ){
                     System.out.println("Error has occurred for pointer: " + postingPointer);
                 }
-
                 line = entry.getKey() + "\t"+ entry.getValue().getdF()+"\t" + postingPointer + "\n";
                 bw.write(line);
                 postingPointer += generatePointer(entry.getValue());
             }
             bw.close();
             writer.close();
-            createPostingFile(vocabularyFile,folder,index);
+            createPostingFile(vocabularyFile,index);
 
         } catch (IOException e) {
             System.out.println("An error occurred while creating the file: " + e.getMessage());
@@ -266,12 +267,13 @@ public class Analysis {
      * @param folder Folder on where the XML files are being kept.
      *               Recursively checks for XML files, going into all nested folders.
      */
-    private void listFilesForFolder(File folder) {
-        deleteFolder(CollectionIndex);
-        CollectionIndex.mkdir();
+    private void listFilesForFolder(File folder, boolean isMini) {
+        //deleteFolder(CollectionIndex);
+        //CollectionIndex.mkdir();
         for (File fileEntry : folder.listFiles()) {
             if (fileEntry.isDirectory()) {
-                listFilesForFolder(fileEntry);
+                System.out.println(fileEntry.getAbsolutePath());
+                listFilesForFolder(fileEntry,isMini);
             } else {
                 try {
                     File file = new File(fileEntry.getAbsolutePath());
@@ -287,7 +289,7 @@ public class Analysis {
 
                     Article article = new Article(pmcid, title, abstr, body, journal, publisher, authors, categories, fileEntry.getAbsolutePath());
                     generate(article);
-                    System.out.println("Current mem usage " + getCurrentMemory());
+                    //System.out.println("Current mem usage " + getCurrentMemory());
                     articles.put(fileEntry.getAbsolutePath(), pmcid);
 
                     // Check if current memory exceeds threshold
@@ -308,7 +310,12 @@ public class Analysis {
 
         // Merge all collection indexes at the end
 
-        Merge(CollectionIndex, 0);
+        if(isMini){
+            Merge(CollectionIndex, index);
+        }else{
+            Merge(CollectionIndex, 0);
+        }
+
     }
 
     /**
@@ -386,10 +393,23 @@ public class Analysis {
             TagFrequency.put(article.pmcId,freqArticle);
             x.setTagFrequency(TagFrequency);
             int sum = 0;
-            for (ArrayList<Integer> value: freqArticle.values()){
+            double mul = 1;
+            for (Map.Entry<String, ArrayList<Integer>> entry : freqArticle.entrySet()) {
+                String key = entry.getKey();
+                ArrayList<Integer> value = entry.getValue();
+                if(key.equals("Abstract")) {
+                    mul += 1;
+                }else if(key.equals("Title")){
+                    mul += 2;
+                }else if(key.equals("Author")){
+                    mul += 1;
+                }
                 sum += value.size();
+
             }
-            tf.put(article.pmcId,(double) sum/ MaxFreq);
+            //if(x.getTagFrequency().get(article).get)
+            double tf_mod = (double) sum * mul / MaxFreq;
+            tf.put(article.pmcId,tf_mod);
             x.setTermFrequecy(tf);
         }
         article.setMaxFrequency(MaxFreq);
@@ -501,7 +521,7 @@ public class Analysis {
             line = reader.readLine();
             while(line != null){
 
-                reader.mark(10000);
+                reader.mark(100000);
                 nextLine = reader.readLine();
                 reader.reset();
 
@@ -510,15 +530,15 @@ public class Analysis {
 
                 if(nextLine != null){
                     String[] nextTokens = nextLine.split("\t");
-                    long pointer = Math.abs(Integer.parseInt(nextTokens[2]) - Integer.parseInt(tokens[2]));
-                    postingAccess.seek(Integer.parseInt(tokens[2]));
+                    long pointer = Math.abs(Long.parseLong(nextTokens[2]) - Long.parseLong(tokens[2]));
+                    postingAccess.seek(Long.parseLong(tokens[2]));
                     byte[] buf = new byte[(int) pointer];
                     postingAccess.readFully(buf);
                     s = new String(buf, "UTF-8");
 
                 }else{
-                    long pointer = postingFile.length() - Integer.parseInt(tokens[2]);
-                    postingAccess.seek(Integer.parseInt(tokens[2]));
+                    long pointer = postingFile.length() - Long.parseLong(tokens[2]);
+                    postingAccess.seek(Long.parseLong(tokens[2]));
                     byte[] buf = new byte[(int) pointer];
                     postingAccess.readFully(buf);
                     s = new String(buf, "UTF-8");
@@ -530,15 +550,20 @@ public class Analysis {
                     String[] tmp = str.split("\t");
 
                     if(tmp.length>1){
-                        double tf = Double.parseDouble(tmp[1]);
-                        double idf = Math.log(articles.size()/ (double)Integer.parseInt(tokens[1]))/Math.log(2);
-                        double weight = Math.pow(tf * idf,2);
                         String pmcId = tmp[0];
-                        double a = vectorNorms.get(pmcId) + weight;
-                        vectorNorms.put(pmcId,a);
+                        try{
+                            double tf = Double.parseDouble(tmp[1]);
+                            double idf = Math.log(articles.size()/ (double)Integer.parseInt(tokens[1]))/Math.log(2);
+                            double weight = Math.pow(tf * idf,2);
+                            double a = vectorNorms.get(pmcId) + weight;
+                            vectorNorms.put(pmcId,a);
+                        }catch(Exception e){
+                            //vectorNorms.put(pmcId,0.0);
+                            //System.out.println("ERROR: "+e);
+                        }
 
                     }else{
-                        System.out.println("Error has occured for line: "+tmp[0]);
+                       // System.out.println("Error has occured for line: "+tmp[0]);
                     }
                 }
                 line = reader.readLine();
@@ -613,10 +638,10 @@ public class Analysis {
                 line2 = reader2.readLine();
 
                 while (line1 != null && line2 != null) {
-                    reader1.mark(4096);
+                    reader1.mark(10000);
                     line3 = reader1.readLine();
                     reader1.reset();
-                    reader2.mark(4096);
+                    reader2.mark(10000);
                     line4 = reader2.readLine();
                     reader2.reset();
 
@@ -634,10 +659,10 @@ public class Analysis {
                     // Writes word of tokens1[]
                     if (tokens2[0].compareTo(tokens1[0]) > 0) {
                         vocabWriter.write(tokens1[0] + "\t" + tokens1[1] + "\t" + postingPointer + "\n");
-                        long pointer = Math.abs(Integer.parseInt(tokens3[2]) - Integer.parseInt(tokens1[2])); // HOW MANY TO READ FROM POSTING FILE
+                        long pointer = Math.abs(Long.parseLong(tokens3[2]) - Long.parseLong(tokens1[2])); // HOW MANY TO READ FROM POSTING FILE
                         if (pointer == 0) {
-                            pointer = posting1.length() - Integer.parseInt(tokens1[2]);
-                            postFile1.seek(Integer.parseInt(tokens1[2]));
+                            pointer = posting1.length() - Long.parseLong(tokens1[2]);
+                            postFile1.seek(Long.parseLong(tokens1[2]));
                             byte[] buf1 = new byte[(int) pointer];
                             postFile1.readFully(buf1);
                             String s = new String(buf1, "UTF-8");
@@ -645,7 +670,7 @@ public class Analysis {
                             postWriter.write(s);
 
                         } else {
-                            postFile1.seek(Integer.parseInt(tokens1[2]));
+                            postFile1.seek(Long.parseLong(tokens1[2]));
                             byte[] buf = new byte[(int) pointer];
                             postFile1.readFully(buf);
                             String s = new String(buf, "UTF-8");
@@ -655,17 +680,17 @@ public class Analysis {
                         line1 = reader1.readLine();
                     } else if (tokens2[0].compareTo(tokens1[0]) < 0) {
                         vocabWriter.write(tokens2[0] + "\t" + tokens2[1] + "\t" + postingPointer + "\n");
-                        long pointer = Math.abs(Integer.parseInt(tokens4[2]) - Integer.parseInt(tokens2[2]));
+                        long pointer = Math.abs(Long.parseLong(tokens4[2]) - Long.parseLong(tokens2[2]));
                         if (pointer == 0) {
-                            pointer = posting2.length() - Integer.parseInt(tokens2[2]);
-                            postFile2.seek(Integer.parseInt(tokens2[2]));
+                            pointer = posting2.length() - Long.parseLong(tokens2[2]);
+                            postFile2.seek(Long.parseLong(tokens2[2]));
                             byte[] buf1 = new byte[(int) pointer];
                             postFile2.readFully(buf1);
                             String s = new String(buf1, "UTF-8");
                             postingPointer += pointer;
                             postWriter.write(s);
                         } else {
-                            postFile2.seek(Integer.parseInt(tokens2[2]));
+                            postFile2.seek(Long.parseLong(tokens2[2]));
                             byte[] buf = new byte[(int) pointer];
                             postFile2.readFully(buf);
                             String s = new String(buf, "UTF-8");
@@ -681,28 +706,50 @@ public class Analysis {
                         long pointer1;
                         long pointer2;
                         if (line3 == null && line4 == null) {
-                            pointer1 = posting1.length() - Integer.parseInt(tokens1[2]);
-                            pointer2 = posting2.length() - Integer.parseInt(tokens2[2]);
+                            pointer1 = posting1.length() - Long.parseLong(tokens1[2]);
+                            pointer2 = posting2.length() - Long.parseLong(tokens2[2]);
 
                         } else if (line4 == null) {
-                            pointer1 = Math.abs(Integer.parseInt(tokens3[2]) - Integer.parseInt(tokens1[2]));
-                            pointer2 = posting2.length() - Integer.parseInt(tokens2[2]);
+                            pointer1 = Math.abs(Long.parseLong(tokens3[2]) - Long.parseLong(tokens1[2]));
+                            pointer2 = posting2.length() - Long.parseLong(tokens2[2]);
 
                         } else if (line3 == null) {
-                            pointer1 = posting1.length() - Integer.parseInt(tokens1[2]);
-                            pointer2 = Math.abs(Integer.parseInt(tokens4[2]) - Integer.parseInt(tokens2[2]));
+                            pointer1 = posting1.length() - Long.parseLong(tokens1[2]);
+                            pointer2 = Math.abs(Long.parseLong(tokens4[2]) - Long.parseLong(tokens2[2]));
 
                         } else {
-                            pointer1 = Math.abs(Integer.parseInt(tokens3[2]) - Integer.parseInt(tokens1[2]));
-                            pointer2 = Math.abs(Integer.parseInt(tokens4[2]) - Integer.parseInt(tokens2[2]));
+                            pointer1 = Math.abs(Long.parseLong(tokens3[2]) - Long.parseLong(tokens1[2]));
+                            pointer2 = Math.abs(Long.parseLong(tokens4[2]) - Long.parseLong(tokens2[2]));
                         }
                         if (pointer1 < 0 || pointer2 < 0) {
                             System.out.print(tokens3[0] + "\t" + tokens4[0] + "  Error here");
                         }
                         byte[] buf1 = new byte[Math.abs((int) pointer1)];
                         byte[] buf2 = new byte[Math.abs((int) pointer2)];
-                        postFile1.readFully(buf1);
-                        postFile2.readFully(buf2);
+                        try {
+                            postFile1.readFully(buf1);
+                        } catch (EOFException e) {
+                            // Read remaining bytes
+                            long remaining = (postFile1.length() - postFile1.getFilePointer());
+                            buf1 = new byte[(int)remaining];
+                            pointer1 = remaining;
+                            postFile1.readFully(buf1);
+                            System.err.println("Caught EOFException while reading postFile1: 732" + e.getMessage());
+                        }
+
+                        try {
+                            postFile2.readFully(buf2);
+                        } catch (EOFException e) {
+                            // Read remaining bytes
+                            long remaining =  (postFile2.length() - postFile2.getFilePointer());
+                            buf2 = new byte[(int)remaining];
+                            pointer2 = remaining;
+                            postFile2.readFully(buf2);
+                            System.err.println("Caught EOFException while reading postFile2: 743" + e.getMessage());
+                        }
+
+                        //postFile1.readFully(buf1);
+                        //postFile2.readFully(buf2);
                         String s1 = new String(buf1, "UTF-8");
                         String s2 = new String(buf2, "UTF-8");
                         postingPointer += pointer1 + pointer2;
@@ -720,25 +767,45 @@ public class Analysis {
 
                         tokens2 = line2.split("\t");
                         vocabWriter.write(tokens2[0] + "\t" + tokens2[1] + "\t" + postingPointer + "\n");
-                        reader2.mark(4096);
+                        reader2.mark(10000);
                         line4 = reader2.readLine();
                         reader2.reset();
                         if (line4 != null) {
                             tokens4 = line4.split("\t");
-                            long pointer = Math.abs(Integer.parseInt(tokens4[2]) - Integer.parseInt(tokens2[2]));
-                            postFile2.seek(Integer.parseInt(tokens2[2]));
+                            long pointer = Math.abs(Long.parseLong(tokens4[2]) - Long.parseLong(tokens2[2]));
+                            postFile2.seek(Long.parseLong(tokens2[2]));
                             byte[] buf = new byte[(int) pointer];
-                            postFile2.readFully(buf);
+
+                            try{
+                                postFile2.readFully(buf);
+                            }catch(EOFException e){
+                                long remaining = (postFile2.length() - postFile2.getFilePointer());
+                                buf = new byte[(int)remaining];
+                                pointer = remaining;
+                                postFile2.readFully(buf);
+                                System.err.println("Caught EOFException while reading postFile2: 781" + e.getMessage());
+                            }
+
                             String s = new String(buf, "UTF-8");
                             postingPointer += pointer;
                             postWriter.write(s);
                             line2 = reader2.readLine();
                         } else {
                             long pointer;
-                            pointer = posting2.length() - Integer.parseInt(tokens2[2]);
-                            postFile2.seek(Integer.parseInt(tokens2[2]));
+                            pointer = posting2.length() - Long.parseLong(tokens2[2]);
+                            postFile2.seek(Long.parseLong(tokens2[2]));
                             byte[] buf1 = new byte[(int) pointer];
-                            postFile2.readFully(buf1);
+
+                            try{
+                                postFile2.readFully(buf1);
+                            }catch(EOFException e){
+                                long remaining =  (postFile2.length() - postFile2.getFilePointer());
+                                buf1 = new byte[(int)remaining];
+                                pointer = remaining;
+                                postFile2.readFully(buf1);
+                                System.err.println("Caught EOFException while reading postFile2 801: " + e.getMessage());
+                            }
+
                             String s = new String(buf1, "UTF-8");
                             postingPointer += pointer;
                             postWriter.write(s);
@@ -754,25 +821,41 @@ public class Analysis {
 
                         tokens1 = line1.split("\t");
                         vocabWriter.write(tokens1[0] + "\t" + tokens1[1] + "\t" + postingPointer + "\n");
-                        reader1.mark(4096);
+                        reader1.mark(10000);
                         line3 = reader1.readLine();
                         reader1.reset();
                         if (line3 != null) {
                             tokens3 = line3.split("\t");
-                            long pointer = Math.abs(Integer.parseInt(tokens3[2]) - Integer.parseInt(tokens1[2]));
-                            postFile1.seek(Integer.parseInt(tokens1[2]));
+                            long pointer = Math.abs(Long.parseLong(tokens3[2]) - Long.parseLong(tokens1[2]));
+                            postFile1.seek(Long.parseLong(tokens1[2]));
                             byte[] buf = new byte[(int) pointer];
-                            postFile1.readFully(buf);
+                            try{
+                                postFile1.readFully(buf);
+                                postingPointer += pointer;
+                            }catch(EOFException e){
+                                long remaining =  (postFile1.length() - postFile1.getFilePointer());
+                                buf = new byte[(int)remaining];
+                                postFile1.readFully(buf);
+                                postingPointer += remaining;
+                                System.err.println("Caught EOFException while reading postFile1 835: " + e.getMessage());
+                            }
                             String s = new String(buf, "UTF-8");
-                            postingPointer += pointer;
                             postWriter.write(s);
                             line1 = reader1.readLine();
                         } else {
                             long pointer;
-                            pointer = posting1.length() - Integer.parseInt(tokens1[2]);
-                            postFile1.seek(Integer.parseInt(tokens1[2]));
+                            pointer = posting1.length() - Long.parseLong(tokens1[2]);
+                            postFile1.seek(Long.parseLong(tokens1[2]));
                             byte[] buf1 = new byte[(int) pointer];
-                            postFile1.readFully(buf1);
+                            try{
+                                postFile1.readFully(buf1);
+                            }catch(EOFException e){
+                                long remaining =  (postFile1.length() - postFile1.getFilePointer());
+                                buf1 = new byte[(int)remaining];
+                                pointer = remaining;
+                                postFile2.readFully(buf1);
+                                System.err.println("Caught EOFException while reading postFile1 852: " + e.getMessage());
+                            }
                             String s = new String(buf1, "UTF-8");
                             postingPointer += pointer;
                             postWriter.write(s);
@@ -801,6 +884,16 @@ public class Analysis {
 
             } catch (IOException e) {
                 System.out.println("Error on merge");
+                e.printStackTrace();
+
+                // Get the line number of the error
+                StackTraceElement[] stackTrace = e.getStackTrace();
+                if (stackTrace.length > 0) {
+                    StackTraceElement firstElement = stackTrace[0];
+                    System.err.println("Exception occurred in " + firstElement.getFileName()
+                            + " at line " + firstElement.getLineNumber());
+                }
+                System.out.println("____________________________________________________________________");
             }
         }
 
